@@ -8,9 +8,9 @@ import (
 	"sync"
 
 	"github.com/gorilla/websocket"
-	// "hecatoncheir/crawler"
-	// "hecatoncheir/crawler/mvideo"
-	// "hecatoncheir/crawler/ulmart"
+	"github.com/hecatoncheir/Hecatoncheir/crawler"
+	"github.com/hecatoncheir/Hecatoncheir/crawler/mvideo"
+	"github.com/hecatoncheir/Hecatoncheir/crawler/ulmart"
 )
 
 // MessageEvent  is a struct of event for receive from socket server
@@ -46,8 +46,8 @@ type Engine struct {
 	headersUpgrader websocket.Upgrader
 }
 
-// Listen is a method for for start listen port
-func (engine *Engine) Listen(host string, port int) {
+// PowerUp is a method for for start listen port
+func (engine *Engine) PowerUp(host string, port int) {
 	engine.Server = &http.Server{Addr: fmt.Sprintf("%v:%v", host, port)}
 	fmt.Printf("Socket server listen on %v, port:%v \n", host, port)
 	engine.Server.Handler = http.HandlerFunc(engine.ClientConnectedHandler)

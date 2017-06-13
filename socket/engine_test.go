@@ -15,7 +15,7 @@ var (
 func SetUpSocketServer() {
 	engine := NewEngine("v1.0")
 	goroutines.Done()
-	engine.Listen("localhost", 8181)
+	engine.PowerUp("localhost", 8181)
 	defer engine.Server.Close()
 }
 
