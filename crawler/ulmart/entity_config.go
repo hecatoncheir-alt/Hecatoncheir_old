@@ -2,6 +2,7 @@ package ulmart
 
 import "github.com/hecatoncheir/Hecatoncheir/crawler"
 
+//ItemConfig is structure of parameters for one item on page
 type ItemConfig struct {
 	ItemSelector        string
 	NameOfItemSelector  string
@@ -9,6 +10,7 @@ type ItemConfig struct {
 	LinkOfItemSelector  string
 }
 
+// Page is structure of parameters for parse one web page
 type Page struct {
 	ItemConfig
 	CityInCookieKey               string
@@ -20,6 +22,7 @@ type Page struct {
 	PageParamPath                 string
 }
 
+// EntityConfig for make crawler work.
 type EntityConfig struct {
 	crawler.Company
 	Pages []Page

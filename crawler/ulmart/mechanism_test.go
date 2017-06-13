@@ -24,8 +24,8 @@ func TestCookies(test *testing.T) {
 	allCookies := []*http.Cookie{}
 	allCookies = append(allCookies, city)
 
-	pageUrl, _ := url.Parse(iri)
-	cookie.SetCookies(pageUrl, allCookies)
+	pageURL, _ := url.Parse(iri)
+	cookie.SetCookies(pageURL, allCookies)
 	client := &http.Client{
 		Jar: cookie,
 	}
