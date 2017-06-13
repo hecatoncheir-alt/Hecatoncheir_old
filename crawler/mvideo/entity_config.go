@@ -7,6 +7,7 @@ type ItemConfig struct {
 	ItemSelector        string
 	NameOfItemSelector  string
 	PriceOfItemSelector string
+	LinkOfItemSelector  string
 }
 
 // Page structure for parse parameters from one page

@@ -24,6 +24,7 @@ type Price struct {
 type Item struct {
 	Name    string
 	Price   Price
+	Link    string
 	Company Company
 }
 
