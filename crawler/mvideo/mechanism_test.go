@@ -1,10 +1,10 @@
 package mvideo
 
 import (
-
-	"github.com/hecatoncheir/Hecatoncheir/crawler"
 	"testing"
 	"time"
+
+	"github.com/hecatoncheir/Hecatoncheir/crawler"
 )
 
 func TestCrawlerCanGetDocumentByConfig(test *testing.T) {
@@ -35,7 +35,7 @@ func TestCrawlerCanGetDocumentByConfig(test *testing.T) {
 	isRightItems := false
 
 	go func() {
-		time.Sleep(time.Second * 3)
+		time.Sleep(time.Second * 6)
 		close(mechanism.Items)
 	}()
 
