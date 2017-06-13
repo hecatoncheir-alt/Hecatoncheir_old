@@ -6,6 +6,7 @@ type ItemConfig struct {
 	ItemSelector        string
 	NameOfItemSelector  string
 	PriceOfItemSelector string
+	LinkOfItemSelector  string
 }
 
 type Page struct {

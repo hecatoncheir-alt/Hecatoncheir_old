@@ -16,6 +16,7 @@ func TestCrawlerCanGetDocumentByConfig(test *testing.T) {
 			ItemSelector:        ".grid-view .product-tile",
 			NameOfItemSelector:  ".product-tile-title",
 			PriceOfItemSelector: ".product-price-current",
+			LinkOfItemSelector:  ".product-tile-title a",
 		},
 	}
 
@@ -40,7 +41,7 @@ func TestCrawlerCanGetDocumentByConfig(test *testing.T) {
 	}()
 
 	for item := range mechanism.Items {
-		if item.Name != "" && item.Price.Value != "" {
+		if item.Name != "" && item.Price.Value != "" && item.Link != "" {
 			isRightItems = true
 			break
 		}

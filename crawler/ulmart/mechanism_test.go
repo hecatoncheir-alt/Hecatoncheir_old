@@ -59,6 +59,7 @@ func TestCrawlerCanGetDocumentByConfig(test *testing.T) {
 			ItemSelector:        ".b-product",
 			NameOfItemSelector:  ".b-product__title a",
 			PriceOfItemSelector: ".b-product__price .b-price__num",
+			LinkOfItemSelector:  ".b-product__title a",
 		},
 	}
 
@@ -78,13 +79,13 @@ func TestCrawlerCanGetDocumentByConfig(test *testing.T) {
 	isRightItems := false
 
 	go func() {
-		time.Sleep(time.Second * 3)
+		time.Sleep(time.Second * 6)
 		close(mechanism.Items)
 	}()
 
 	for item := range mechanism.Items {
-		assert.Equal(test, item.Price.City, "Москва", "Not right city")
-		if item.Name != "" && item.Price.Value != "" {
+		if item.Name != "" && item.Price.Value != "" && item.Link != "" {
+			assert.Equal(test, item.Price.City, "Москва", "Not right city")
 			isRightItems = true
 			break
 		}
