@@ -1,6 +1,7 @@
 package broker
 
 import (
+	"encoding/json"
 	"testing"
 )
 
@@ -12,7 +13,9 @@ func TestBrokerCanConnectToNSQ(test *testing.T) {
 		test.Error(err)
 	}
 
-	broker.Producer.Publish("Hecatoncheir", []byte("Message"))
+	message, err := json.Marshal(map[string]string{"test key": "test value"})
+
+	broker.Producer.Publish("Hecatoncheir", message)
 
 	items, err := broker.ListenTopic("Hecatoncheir", "ParsedItems")
 	if err != nil {
@@ -20,7 +23,9 @@ func TestBrokerCanConnectToNSQ(test *testing.T) {
 	}
 
 	for item := range items {
-		if item != "" {
+		data := map[string]string{}
+		json.Unmarshal(item, &data)
+		if data["test key"] == "test value" {
 			break
 		}
 	}

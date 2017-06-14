@@ -53,20 +53,19 @@ func (broker *Broker) Connect(host string, port int) error {
 
 // }
 
-// AddHandlerToTopic method for adding handler for listing events
-func (broker *Broker) AddHandlerToTopic(topic string, channel string, handler func(event string)) {}
-
 // ListenTopic get events in channel of topic
-func (broker *Broker) ListenTopic(topic string, channel string) (<-chan interface{}, error) {
+func (broker *Broker) ListenTopic(topic string, channel string) (<-chan []byte, error) {
 	consumer, err := nsq.NewConsumer(topic, channel, broker.сonfiguration)
 	if err != nil {
 		return nil, err
 	}
 
-	events := make(chan interface{}, 3)
+	events := make(chan []byte, 3)
 
 	handler := nsq.HandlerFunc(func(message *nsq.Message) error {
-		events <- string(message.Body)
+		// var event interface{}
+		// json.Unmarshal(message.Body, &event)
+		events <- message.Body
 		return nil
 	})
 
