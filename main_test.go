@@ -68,7 +68,7 @@ func TestSocketCanParseDocumentOfMvideo(test *testing.T) {
 
 	configuration := mvideo.EntityConfig{
 		Company: crawler.Company{
-			Iri:        "http://www.mvideo.ru/",
+			IRI:        "http://www.mvideo.ru/",
 			Name:       "M.Video",
 			Categories: []string{"Телефоны"},
 		},
@@ -144,7 +144,7 @@ func TestSocketCanParseDocumentOfUlmart(test *testing.T) {
 
 	configuration := ulmart.EntityConfig{
 		Company: crawler.Company{
-			Iri:        "https://www.ulmart.ru/",
+			IRI:        "https://www.ulmart.ru/",
 			Name:       "Ulmart",
 			Categories: []string{"Телефоны"},
 		},
