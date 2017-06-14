@@ -3,6 +3,7 @@ package broker
 import (
 	"fmt"
 	"log"
+	"strconv"
 
 	nsq "github.com/bitly/go-nsq"
 )
@@ -29,7 +30,7 @@ func (broker *Broker) connectToMessageBroker(host string, port int) (*nsq.Produc
 		broker.Port = port
 	}
 
-	hostAddr := fmt.Sprintf("%v:%v", broker.IP, string(broker.Port))
+	hostAddr := fmt.Sprintf("%v:%v", broker.IP, strconv.Itoa(broker.Port))
 	producer, err := nsq.NewProducer(hostAddr, broker.сonfiguration)
 
 	if err != nil {
@@ -56,23 +57,26 @@ func (broker *Broker) Connect(host string, port int) error {
 func (broker *Broker) AddHandlerToTopic(topic string, channel string, handler func(event string)) {}
 
 // ListenTopic get events in channel of topic
-func (broker *Broker) ListenTopic(topic string, channel string) (<-chan string, error) {
+func (broker *Broker) ListenTopic(topic string, channel string) (<-chan interface{}, error) {
 	consumer, err := nsq.NewConsumer(topic, channel, broker.сonfiguration)
 	if err != nil {
 		return nil, err
 	}
 
-	events := make(chan string)
+	events := make(chan interface{}, 3)
 
 	handler := nsq.HandlerFunc(func(message *nsq.Message) error {
-		fmt.Println(message)
+		events <- string(message.Body)
 		return nil
 	})
 
 	consumer.AddHandler(handler)
 
-	hostAddr := fmt.Sprintf("%v:%v", broker.IP, string(broker.Port))
-	consumer.ConnectToNSQD(hostAddr)
+	hostAddr := fmt.Sprintf("%v:%v", broker.IP, strconv.Itoa(broker.Port))
+	err = consumer.ConnectToNSQD(hostAddr)
+	if err != nil {
+		return nil, err
+	}
 
 	return events, nil
 }
