@@ -91,7 +91,7 @@ func (engine *Engine) listenConnectedClient(client *ConnectedClient) {
 			dataBytes, _ := json.Marshal(event.Data)
 			json.Unmarshal(dataBytes, &company)
 
-			if company.Iri == "http://www.mvideo.ru/" {
+			if company.IRI == "http://www.mvideo.ru/" {
 				hecatonhair := mvideo.NewCrawler()
 
 				go func() {
@@ -108,7 +108,7 @@ func (engine *Engine) listenConnectedClient(client *ConnectedClient) {
 				go hecatonhair.RunWithConfiguration(configuration)
 			}
 
-			if company.Iri == "https://www.ulmart.ru/" {
+			if company.IRI == "https://www.ulmart.ru/" {
 				hecatonhair := ulmart.NewCrawler()
 
 				go func() {

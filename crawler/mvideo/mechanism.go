@@ -31,13 +31,15 @@ func NewCrawler() *Crawler {
 // GetItemsFromPage can get product from html document by selectors in the configuration
 func (cw *Crawler) GetItemsFromPage(document *goquery.Document, pageConfig Page, company crawler.Company, patternForCutPrice *regexp.Regexp) error {
 	document.Find(pageConfig.ItemSelector).Each(func(iterator int, item *goquery.Selection) {
-		var name, price string
+		var name, price, link string
 
 		name = item.Find(pageConfig.NameOfItemSelector).Text()
 		price = item.Find(pageConfig.PriceOfItemSelector).Text()
+		link = item.Find(pageConfig.LinkOfItemSelector).AttrOr("href", "/")
 
 		name = strings.TrimSpace(name)
 		price = strings.TrimSpace(price)
+		link = company.IRI + link
 
 		// price = strings.Replace(price, "р.", "", -1)
 		price = patternForCutPrice.ReplaceAllString(price, "")
@@ -58,6 +60,7 @@ func (cw *Crawler) GetItemsFromPage(document *goquery.Document, pageConfig Page,
 		pageItem := crawler.Item{
 			Name:    name,
 			Price:   priceData,
+			Link:    link,
 			Company: company,
 		}
 
@@ -73,7 +76,7 @@ func (cw *Crawler) RunWithConfiguration(config EntityConfig) error {
 
 	for _, pageConfig := range config.Pages {
 
-		document, err := goquery.NewDocument(config.Company.Iri + pageConfig.Path + pageConfig.PageParamPath + "1" + pageConfig.CityParamPath + pageConfig.CityParam)
+		document, err := goquery.NewDocument(config.Company.IRI + pageConfig.Path + pageConfig.PageParamPath + "1" + pageConfig.CityParamPath + pageConfig.CityParam)
 		if err != nil {
 			return err
 		}
@@ -97,7 +100,7 @@ func (cw *Crawler) RunWithConfiguration(config EntityConfig) error {
 
 		var iterator int
 		for iterator = 2; iterator <= countOfPages; iterator++ {
-			document, err := goquery.NewDocument(config.Company.Iri + pageConfig.Path + pageConfig.PageParamPath + strconv.Itoa(iterator) + pageConfig.CityParamPath + pageConfig.CityParam)
+			document, err := goquery.NewDocument(config.Company.IRI + pageConfig.Path + pageConfig.PageParamPath + strconv.Itoa(iterator) + pageConfig.CityParamPath + pageConfig.CityParam)
 			if err != nil {
 				return err
 			}

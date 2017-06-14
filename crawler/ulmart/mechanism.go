@@ -32,15 +32,19 @@ func NewCrawler() *Crawler {
 // GetItemsFromPage can get product from html document by selectors in the configuration
 func (cw *Crawler) GetItemsFromPage(document *goquery.Document, pageConfig Page, company crawler.Company) error {
 	document.Find(pageConfig.ItemSelector).Each(func(iterator int, item *goquery.Selection) {
-		var name, price string
+		var name, price, link string
 
 		name = item.Find(pageConfig.NameOfItemSelector).Text()
 		price = item.Find(pageConfig.PriceOfItemSelector).Text()
+		link = item.Find(pageConfig.LinkOfItemSelector).AttrOr("href", "/")
 
 		name = strings.TrimSpace(name)
 
 		price = strings.Replace(price, " ", "", -1)
 		price = strings.TrimSpace(price)
+
+		link = strings.Split(link, "?")[0]
+		link = company.IRI + link
 
 		cityName, err := cities.SearchCityByCode(pageConfig.CityID)
 		if err != nil {
@@ -57,6 +61,7 @@ func (cw *Crawler) GetItemsFromPage(document *goquery.Document, pageConfig Page,
 			Name:    name,
 			Price:   priceData,
 			Company: company,
+			Link:    link,
 		}
 
 		cw.Items <- pageItem
@@ -65,14 +70,15 @@ func (cw *Crawler) GetItemsFromPage(document *goquery.Document, pageConfig Page,
 	return nil
 }
 
-func (cw *Crawler) GetDocumentForUrl(iri string, pageConfig Page) (*goquery.Document, error) {
+// GetDocumentForURL parse nodes of web page
+func (cw *Crawler) GetDocumentForURL(iri string, pageConfig Page) (*goquery.Document, error) {
 	cookie, _ := cookiejar.New(nil)
 	city := &http.Cookie{Name: pageConfig.CityInCookieKey, Value: pageConfig.CityID}
 	allCookies := []*http.Cookie{}
 	allCookies = append(allCookies, city)
 
-	pageUrl, _ := url.Parse(iri)
-	cookie.SetCookies(pageUrl, allCookies)
+	pageURL, _ := url.Parse(iri)
+	cookie.SetCookies(pageURL, allCookies)
 	client := &http.Client{
 		Jar: cookie,
 	}
@@ -93,9 +99,9 @@ func (cw *Crawler) RunWithConfiguration(config EntityConfig) error {
 
 	for _, pageConfig := range config.Pages {
 
-		iri := config.Company.Iri + pageConfig.Path
+		iri := config.Company.IRI + pageConfig.Path
 
-		document, err := cw.GetDocumentForUrl(iri, pageConfig)
+		document, err := cw.GetDocumentForURL(iri, pageConfig)
 		if err != nil {
 			return err
 		}
@@ -113,7 +119,7 @@ func (cw *Crawler) RunWithConfiguration(config EntityConfig) error {
 		countOfPages := maxItems / totalPerPageItems
 
 		if maxItems%totalPerPageItems != 0 {
-			countOfPages += 1
+			countOfPages++
 		}
 
 		pagesCrawling := make(chan func(), 6)
@@ -126,8 +132,8 @@ func (cw *Crawler) RunWithConfiguration(config EntityConfig) error {
 
 		var iterator int
 		for iterator = 1; iterator <= countOfPages; iterator++ {
-			iri := config.Company.Iri + pageConfig.PagePath + pageConfig.PageParamPath + strconv.Itoa(iterator)
-			document, err := cw.GetDocumentForUrl(iri, pageConfig)
+			iri := config.Company.IRI + pageConfig.PagePath + pageConfig.PageParamPath + strconv.Itoa(iterator)
+			document, err := cw.GetDocumentForURL(iri, pageConfig)
 			if err != nil {
 				return err
 			}
