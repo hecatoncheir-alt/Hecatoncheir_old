@@ -1,6 +1,7 @@
 package broker
 
 import (
+	"encoding/json"
 	"fmt"
 	"log"
 	"strconv"
@@ -49,9 +50,16 @@ func (broker *Broker) Connect(host string, port int) error {
 	return err
 }
 
-// func (broker Broker) WriteToTopic(topic string, message interface{}) {
+// WriteToTopic method for publish message to topic
+func (broker *Broker) WriteToTopic(topic string, message interface{}) error {
+	event, err := json.Marshal(message)
+	if err != nil {
+		return err
+	}
 
-// }
+	go broker.Producer.Publish(topic, event)
+	return nil
+}
 
 // ListenTopic get events in channel of topic
 func (broker *Broker) ListenTopic(topic string, channel string) (<-chan []byte, error) {
@@ -69,7 +77,7 @@ func (broker *Broker) ListenTopic(topic string, channel string) (<-chan []byte, 
 		return nil
 	})
 
-	consumer.AddHandler(handler)
+	consumer.AddConcurrentHandlers(handler, 6)
 
 	hostAddr := fmt.Sprintf("%v:%v", broker.IP, strconv.Itoa(broker.Port))
 	err = consumer.ConnectToNSQD(hostAddr)
