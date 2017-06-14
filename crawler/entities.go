@@ -8,7 +8,7 @@ import (
 // Company type for parse
 type Company struct {
 	ID         string
-	Iri        string
+	IRI        string
 	Name       string
 	Categories []string
 }

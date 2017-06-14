@@ -65,7 +65,7 @@ func TestCrawlerCanGetDocumentByConfig(test *testing.T) {
 
 	configuration := EntityConfig{
 		Company: crawler.Company{
-			Iri:        "https://www.ulmart.ru/",
+			IRI:        "https://www.ulmart.ru/",
 			Name:       "Ulmart",
 			Categories: []string{"Телефоны"},
 		},
