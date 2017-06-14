@@ -39,6 +39,7 @@ func (cw *Crawler) GetItemsFromPage(document *goquery.Document, pageConfig Page,
 
 		name = strings.TrimSpace(name)
 		price = strings.TrimSpace(price)
+		link = company.IRI + link
 
 		// price = strings.Replace(price, "р.", "", -1)
 		price = patternForCutPrice.ReplaceAllString(price, "")
@@ -75,7 +76,7 @@ func (cw *Crawler) RunWithConfiguration(config EntityConfig) error {
 
 	for _, pageConfig := range config.Pages {
 
-		document, err := goquery.NewDocument(config.Company.Iri + pageConfig.Path + pageConfig.PageParamPath + "1" + pageConfig.CityParamPath + pageConfig.CityParam)
+		document, err := goquery.NewDocument(config.Company.IRI + pageConfig.Path + pageConfig.PageParamPath + "1" + pageConfig.CityParamPath + pageConfig.CityParam)
 		if err != nil {
 			return err
 		}
@@ -99,7 +100,7 @@ func (cw *Crawler) RunWithConfiguration(config EntityConfig) error {
 
 		var iterator int
 		for iterator = 2; iterator <= countOfPages; iterator++ {
-			document, err := goquery.NewDocument(config.Company.Iri + pageConfig.Path + pageConfig.PageParamPath + strconv.Itoa(iterator) + pageConfig.CityParamPath + pageConfig.CityParam)
+			document, err := goquery.NewDocument(config.Company.IRI + pageConfig.Path + pageConfig.PageParamPath + strconv.Itoa(iterator) + pageConfig.CityParamPath + pageConfig.CityParam)
 			if err != nil {
 				return err
 			}

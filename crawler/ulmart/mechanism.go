@@ -44,6 +44,7 @@ func (cw *Crawler) GetItemsFromPage(document *goquery.Document, pageConfig Page,
 		price = strings.TrimSpace(price)
 
 		link = strings.Split(link, "?")[0]
+		link = company.IRI + link
 
 		cityName, err := cities.SearchCityByCode(pageConfig.CityID)
 		if err != nil {
@@ -98,7 +99,7 @@ func (cw *Crawler) RunWithConfiguration(config EntityConfig) error {
 
 	for _, pageConfig := range config.Pages {
 
-		iri := config.Company.Iri + pageConfig.Path
+		iri := config.Company.IRI + pageConfig.Path
 
 		document, err := cw.GetDocumentForURL(iri, pageConfig)
 		if err != nil {
@@ -131,7 +132,7 @@ func (cw *Crawler) RunWithConfiguration(config EntityConfig) error {
 
 		var iterator int
 		for iterator = 1; iterator <= countOfPages; iterator++ {
-			iri := config.Company.Iri + pageConfig.PagePath + pageConfig.PageParamPath + strconv.Itoa(iterator)
+			iri := config.Company.IRI + pageConfig.PagePath + pageConfig.PageParamPath + strconv.Itoa(iterator)
 			document, err := cw.GetDocumentForURL(iri, pageConfig)
 			if err != nil {
 				return err
