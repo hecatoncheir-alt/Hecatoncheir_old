@@ -123,6 +123,10 @@ func TestSocketCanParseDocumentOfMvideo(test *testing.T) {
 //	}
 //}
 func TestSocketCanParseDocumentOfUlmart(test *testing.T) {
+	goroutines.Add(1)
+	go once.Do(SetUpSocketServer)
+	goroutines.Wait()
+
 	client, err := websocket.Dial("ws://localhost:8181", "", "http://localhost:8181")
 
 	if err != nil {
@@ -141,6 +145,7 @@ func TestSocketCanParseDocumentOfUlmart(test *testing.T) {
 			ItemSelector:        ".b-product",
 			NameOfItemSelector:  ".b-product__title a",
 			PriceOfItemSelector: ".b-product__price .b-price__num",
+			LinkOfItemSelector:  ".b-product__title a",
 		},
 	}
 
@@ -197,7 +202,8 @@ func TestBrokerMessaging(test *testing.T) {
 				"CityID":                        "18414",
 				"ItemSelector": ".b-product",
 				"NameOfItemSelector": ".b-product__title a",
-				"PriceOfItemSelector": ".b-product__price .b-price__num"
+				"PriceOfItemSelector": ".b-product__price .b-price__num",
+				"LinkOfItemSelector": ".b-product__title a"
 			}]
 		}
 	}"`
@@ -229,6 +235,9 @@ func TestBrokerMessaging(test *testing.T) {
 
 		item := crawler.Item{}
 		json.Unmarshal(data, &item)
-		break
+		if item.Name != "" {
+			break
+		}
+		continue
 	}
 }

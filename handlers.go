@@ -2,7 +2,6 @@ package main
 
 import (
 	"encoding/json"
-	"fmt"
 	"log"
 
 	"github.com/hecatoncheir/Hecatoncheir/broker"
@@ -34,7 +33,6 @@ func SubscribeCrawlerHandler(broker *broker.Broker, channel string) {
 				var company = crawler.Company{}
 				dataBytes, _ := json.Marshal(details.Data)
 				json.Unmarshal(dataBytes, &company)
-				fmt.Println(company)
 
 				if company.IRI == "http://www.mvideo.ru/" {
 					hecatonhair := mvideo.NewCrawler()
@@ -57,13 +55,11 @@ func SubscribeCrawlerHandler(broker *broker.Broker, channel string) {
 				}
 
 				if company.IRI == "https://www.ulmart.ru/" {
-					fmt.Println("AAAA")
 					hecatonhair := ulmart.NewCrawler()
 					var configuration = ulmart.EntityConfig{}
 					json.Unmarshal(dataBytes, &configuration)
 
 					go func(config ulmart.EntityConfig) {
-
 						go hecatonhair.RunWithConfiguration(config)
 
 						go func() {
