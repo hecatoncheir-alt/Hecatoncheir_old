@@ -17,6 +17,7 @@ func SetUp() {
 
 	err := broker.Connect("192.168.99.100", 4150)
 	if err != nil {
+		log.Println("Need started NSQ")
 		log.Println(err)
 	}
 }
