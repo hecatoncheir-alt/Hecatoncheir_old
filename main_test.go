@@ -1,9 +1,11 @@
 package main
 
 import (
+	"encoding/json"
 	"sync"
 	"testing"
 
+	broker "github.com/hecatoncheir/Hecatoncheir/broker"
 	"github.com/hecatoncheir/Hecatoncheir/crawler"
 	"github.com/hecatoncheir/Hecatoncheir/crawler/mvideo"
 	"github.com/hecatoncheir/Hecatoncheir/crawler/ulmart"
@@ -172,6 +174,61 @@ func TestSocketCanParseDocumentOfUlmart(test *testing.T) {
 			event.Data.(map[string]interface{})["Item"] == nil {
 			test.Fail()
 		}
+		break
+	}
+}
+
+func TestBrokerMessaging(test *testing.T) {
+	var err error
+
+	request := `{
+	"Message": "Get items from categories of company",
+	"Data": {
+		"Iri": "https://www.ulmart.ru/",
+		"Name": "Ulmart",
+		"Categories": ["Телефоны"],
+			"Pages": [{
+				"Path":                          "catalog/communicators",
+				"TotalCountItemsOnPageSelector": "#total-show-count",
+				"MaxItemsOnPageSelector":        "#max-show-count",
+				"PagePath":                      "catalogAdditional/communicators",
+				"PageParamPath":                 "?pageNum=",
+				"CityInCookieKey":               "city",
+				"CityID":                        "18414",
+				"ItemSelector": ".b-product",
+				"NameOfItemSelector": ".b-product__title a",
+				"PriceOfItemSelector": ".b-product__price .b-price__num"
+			}]
+		}
+	}"`
+
+	bro := broker.New()
+	err = bro.Connect("192.168.99.100", 4150)
+	if err != nil {
+		test.Error(err)
+	}
+
+	SubscribeCrawlerHandler(bro, "CrawlingRequest")
+
+	items, err := bro.ListenTopic("Hecatoncheir", "Items")
+	if err != nil {
+		test.Error(err)
+	}
+
+	err = bro.WriteToTopic("Hecatoncheir", request)
+	if err != nil {
+		test.Error(err)
+	}
+
+	it := 0
+	for data := range items {
+		if it < 1 {
+			it++
+			continue
+		}
+
+		item := crawler.Item{}
+		json.Unmarshal(data, &item)
 		break
 	}
 }
