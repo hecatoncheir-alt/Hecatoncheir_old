@@ -2,18 +2,27 @@ package broker
 
 import (
 	"encoding/json"
+	"log"
+	"sync"
 	"testing"
 
 	"github.com/hecatoncheir/Hecatoncheir/crawler"
 )
 
-func TestBrokerCanConnectToNSQ(test *testing.T) {
-	broker := New()
+var broker *Broker
+var once sync.Once
+
+func SetUp() {
+	broker = New()
 
 	err := broker.Connect("192.168.99.100", 4150)
 	if err != nil {
-		test.Error(err)
+		log.Println(err)
 	}
+}
+
+func TestBrokerCanConnectToNSQ(test *testing.T) {
+	once.Do(SetUp)
 
 	message, err := json.Marshal(map[string]string{"test key": "test value"})
 
@@ -35,21 +44,16 @@ func TestBrokerCanConnectToNSQ(test *testing.T) {
 
 func TestBrokerCanSendMessageToNSQ(test *testing.T) {
 	var err error
-	broker := New()
-
-	err = broker.Connect("192.168.99.100", 4150)
-	if err != nil {
-		test.Error(err)
-	}
+	once.Do(SetUp)
 
 	item := crawler.Item{Name: "test item"}
 
-	err = broker.WriteToTopic("Hecatoncheir", item)
+	items, err := broker.ListenTopic("Hecatoncheir", "items")
 	if err != nil {
 		test.Error(err)
 	}
 
-	items, err := broker.ListenTopic("Hecatoncheir", "ParsedItem")
+	err = broker.WriteToTopic("Hecatoncheir", item)
 	if err != nil {
 		test.Error(err)
 	}

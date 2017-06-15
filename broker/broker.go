@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 	"strconv"
+	"time"
 
 	nsq "github.com/bitly/go-nsq"
 )
@@ -13,6 +14,8 @@ import (
 func New() *Broker {
 	broker := Broker{}
 	broker.сonfiguration = nsq.NewConfig()
+	broker.сonfiguration.MaxInFlight = 6
+	broker.сonfiguration.MsgTimeout = time.Duration(time.Second * 6)
 	return &broker
 }
 
@@ -68,7 +71,7 @@ func (broker *Broker) ListenTopic(topic string, channel string) (<-chan []byte, 
 		return nil, err
 	}
 
-	events := make(chan []byte, 3)
+	events := make(chan []byte, 6)
 
 	handler := nsq.HandlerFunc(func(message *nsq.Message) error {
 		// var event interface{}
@@ -80,10 +83,7 @@ func (broker *Broker) ListenTopic(topic string, channel string) (<-chan []byte, 
 	consumer.AddConcurrentHandlers(handler, 6)
 
 	hostAddr := fmt.Sprintf("%v:%v", broker.IP, strconv.Itoa(broker.Port))
-	err = consumer.ConnectToNSQD(hostAddr)
-	if err != nil {
-		return nil, err
-	}
+	go consumer.ConnectToNSQD(hostAddr)
 
 	return events, nil
 }
