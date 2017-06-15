@@ -27,9 +27,9 @@ func TestBrokerCanConnectToNSQ(test *testing.T) {
 
 	message, err := json.Marshal(map[string]string{"test key": "test value"})
 
-	broker.Producer.Publish("Hecatoncheir", message)
+	broker.Producer.Publish("test", message)
 
-	items, err := broker.ListenTopic("Hecatoncheir", "test")
+	items, err := broker.ListenTopic("test", "testing")
 	if err != nil {
 		test.Error(err)
 	}
@@ -49,12 +49,12 @@ func TestBrokerCanSendMessageToNSQ(test *testing.T) {
 
 	item := crawler.Item{Name: "test item"}
 
-	items, err := broker.ListenTopic("Hecatoncheir", "items")
+	items, err := broker.ListenTopic("ItemsOfCompanies", "test")
 	if err != nil {
 		test.Error(err)
 	}
 
-	err = broker.WriteToTopic("Hecatoncheir", item)
+	err = broker.WriteToTopic("ItemsOfCompanies", item)
 	if err != nil {
 		test.Error(err)
 	}

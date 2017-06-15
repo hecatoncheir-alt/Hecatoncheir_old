@@ -2,6 +2,7 @@ package main
 
 import (
 	"encoding/json"
+	"fmt"
 	"log"
 
 	"github.com/hecatoncheir/Hecatoncheir/broker"
@@ -17,16 +18,17 @@ type MessageEvent struct {
 }
 
 // SubscribeCrawlerHandler handler for crawling items from coduments
-func SubscribeCrawlerHandler(broker *broker.Broker, channel string) {
-	events, err := broker.ListenTopic("Hecatoncheir", channel)
+func SubscribeCrawlerHandler(broker *broker.Broker, topic string) {
+	events, err := broker.ListenTopic(topic, "Crawler")
 	if err != nil {
 		log.Println(err)
 	}
 
 	go func(channel <-chan []byte) {
 		for event := range events {
-			var details MessageEvent
+			details := MessageEvent{}
 			json.Unmarshal(event, &details)
+			fmt.Println(details)
 
 			switch details.Message {
 			case "Get items from categories of company":
@@ -40,7 +42,6 @@ func SubscribeCrawlerHandler(broker *broker.Broker, channel string) {
 					json.Unmarshal(dataBytes, &configuration)
 
 					go func(config mvideo.EntityConfig) {
-
 						go hecatonhair.RunWithConfiguration(config)
 
 						go func() {
@@ -48,7 +49,8 @@ func SubscribeCrawlerHandler(broker *broker.Broker, channel string) {
 								data := map[string]interface{}{"Item": item}
 
 								message := MessageEvent{Message: "Item from categories of company parsed", Data: data}
-								broker.WriteToTopic("Hecatoncheir", message)
+
+								broker.WriteToTopic("ItemsOfCompanies", message)
 							}
 						}()
 					}(configuration)
@@ -67,7 +69,7 @@ func SubscribeCrawlerHandler(broker *broker.Broker, channel string) {
 								data := map[string]interface{}{"Item": item}
 
 								message := MessageEvent{Message: "Item from categories of company parsed", Data: data}
-								broker.WriteToTopic("Hecatoncheir", message)
+								broker.WriteToTopic("ItemsOfCompanies", message)
 							}
 						}()
 					}(configuration)

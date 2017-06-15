@@ -2,6 +2,7 @@ package main
 
 import (
 	"encoding/json"
+	"fmt"
 	"sync"
 	"testing"
 
@@ -15,13 +16,11 @@ import (
 )
 
 var (
-	once       sync.Once
-	goroutines sync.WaitGroup
+	once sync.Once
 )
 
 func SetUpSocketServer() {
 	server := socket.NewEngine("v1.0")
-	goroutines.Done()
 	server.PowerUp("localhost", 8181)
 	defer server.Server.Close()
 }
@@ -45,9 +44,7 @@ func SetUpSocketServer() {
 // 	}
 // }
 func TestSocketCanParseDocumentOfMvideo(test *testing.T) {
-	goroutines.Add(1)
 	go once.Do(SetUpSocketServer)
-	goroutines.Wait()
 
 	client, err := websocket.Dial("ws://localhost:8181", "", "http://localhost:8181")
 
@@ -123,9 +120,7 @@ func TestSocketCanParseDocumentOfMvideo(test *testing.T) {
 //	}
 //}
 func TestSocketCanParseDocumentOfUlmart(test *testing.T) {
-	goroutines.Add(1)
 	go once.Do(SetUpSocketServer)
-	goroutines.Wait()
 
 	client, err := websocket.Dial("ws://localhost:8181", "", "http://localhost:8181")
 
@@ -214,30 +209,33 @@ func TestBrokerMessaging(test *testing.T) {
 		test.Error(err)
 	}
 
-	SubscribeCrawlerHandler(bro, "CrawlingRequest")
+	go SubscribeCrawlerHandler(bro, "CrawlingRequest")
 
-	items, err := bro.ListenTopic("Hecatoncheir", "Items")
+	items, err := bro.ListenTopic("ItemsOfCompanies", "test")
 	if err != nil {
 		test.Error(err)
 	}
 
-	err = bro.WriteToTopic("Hecatoncheir", request)
+	err = bro.WriteToTopic("CrawlingRequest", request)
 	if err != nil {
 		test.Error(err)
 	}
 
 	it := 0
 	for data := range items {
+		item := crawler.Item{}
+		json.Unmarshal(data, &item)
+		fmt.Println(item)
+
 		if it < 1 {
 			it++
 			continue
 		}
 
-		item := crawler.Item{}
-		json.Unmarshal(data, &item)
 		if item.Name != "" {
 			break
 		}
+
 		continue
 	}
 }
