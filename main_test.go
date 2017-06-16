@@ -2,15 +2,14 @@ package main
 
 import (
 	"encoding/json"
-	"fmt"
 	"sync"
 	"testing"
 
-	broker "github.com/hecatoncheir/Hecatoncheir/broker"
+	"github.com/hecatoncheir/Hecatoncheir/broker"
 	"github.com/hecatoncheir/Hecatoncheir/crawler"
 	"github.com/hecatoncheir/Hecatoncheir/crawler/mvideo"
 	"github.com/hecatoncheir/Hecatoncheir/crawler/ulmart"
-	socket "github.com/hecatoncheir/Hecatoncheir/socket"
+	"github.com/hecatoncheir/Hecatoncheir/socket"
 
 	"golang.org/x/net/websocket"
 )
@@ -181,27 +180,52 @@ func TestSocketCanParseDocumentOfUlmart(test *testing.T) {
 func TestBrokerMessaging(test *testing.T) {
 	var err error
 
-	request := `{
-	"Message": "Get items from categories of company",
-	"Data": {
-		"Iri": "https://www.ulmart.ru/",
-		"Name": "Ulmart",
-		"Categories": ["Телефоны"],
-			"Pages": [{
-				"Path":                          "catalog/communicators",
-				"TotalCountItemsOnPageSelector": "#total-show-count",
-				"MaxItemsOnPageSelector":        "#max-show-count",
-				"PagePath":                      "catalogAdditional/communicators",
-				"PageParamPath":                 "?pageNum=",
-				"CityInCookieKey":               "city",
-				"CityID":                        "18414",
-				"ItemSelector": ".b-product",
-				"NameOfItemSelector": ".b-product__title a",
-				"PriceOfItemSelector": ".b-product__price .b-price__num",
-				"LinkOfItemSelector": ".b-product__title a"
-			}]
-		}
-	}"`
+	// request := `{
+	// "Message": "Get items from categories of company",
+	// "Data": {
+	// 	"Iri": "https://www.ulmart.ru/",
+	// 	"Name": "Ulmart",
+	// 	"Categories": ["Телефоны"],
+	// 		"Pages": [{
+	// 			"Path":                          "catalog/communicators",
+	// 			"TotalCountItemsOnPageSelector": "#total-show-count",
+	// 			"MaxItemsOnPageSelector":        "#max-show-count",
+	// 			"PagePath":                      "catalogAdditional/communicators",
+	// 			"PageParamPath":                 "?pageNum=",
+	// 			"CityInCookieKey":               "city",
+	// 			"CityID":                        "18414",
+	// 			"ItemSelector": ".b-product",
+	// 			"NameOfItemSelector": ".b-product__title a",
+	// 			"PriceOfItemSelector": ".b-product__price .b-price__num",
+	// 			"LinkOfItemSelector": ".b-product__title a"
+	// 		}]
+	// 	}
+	// }"`
+
+	smartphonesPage := ulmart.Page{
+		Path: "catalog/communicators",
+		TotalCountItemsOnPageSelector: "#total-show-count",
+		MaxItemsOnPageSelector:        "#max-show-count",
+		PagePath:                      "catalogAdditional/communicators",
+		PageParamPath:                 "?pageNum=",
+		CityInCookieKey:               "city",
+		CityID:                        "18414",
+		ItemConfig: ulmart.ItemConfig{
+			ItemSelector:        ".b-product",
+			NameOfItemSelector:  ".b-product__title a",
+			PriceOfItemSelector: ".b-product__price .b-price__num",
+			LinkOfItemSelector:  ".b-product__title a",
+		},
+	}
+
+	configuration := ulmart.EntityConfig{
+		Company: crawler.Company{
+			IRI:        "https://www.ulmart.ru/",
+			Name:       "Ulmart",
+			Categories: []string{"Телефоны"},
+		},
+		Pages: []ulmart.Page{smartphonesPage},
+	}
 
 	bro := broker.New()
 	err = bro.Connect("192.168.99.100", 4150)
@@ -209,33 +233,43 @@ func TestBrokerMessaging(test *testing.T) {
 		test.Error(err)
 	}
 
-	go SubscribeCrawlerHandler(bro, "CrawlingRequest")
+	go SubscribeCrawlerHandler(bro, "CrawlingRequest", "ItemsOfCompanies")
 
 	items, err := bro.ListenTopic("ItemsOfCompanies", "test")
 	if err != nil {
 		test.Error(err)
 	}
 
+	request := MessageEvent{Message: "Get items from categories of company", Data: configuration}
+
 	err = bro.WriteToTopic("CrawlingRequest", request)
 	if err != nil {
 		test.Error(err)
 	}
 
-	it := 0
 	for data := range items {
-		item := crawler.Item{}
-		json.Unmarshal(data, &item)
-		fmt.Println(item)
+		event := MessageEvent{}
+		json.Unmarshal(data, &event)
 
-		if it < 1 {
-			it++
-			continue
+		if event.Message != "Item from categories of company parsed" {
+			test.Fail()
+			break
+		}
+
+		item := crawler.Item{}
+		itemBytes, err := json.Marshal(event.Data.(map[string]interface{})["Item"])
+		if err != nil {
+			test.Error(err)
+		}
+		json.Unmarshal(itemBytes, &item)
+
+		if item.Name == "" {
+			test.Fail()
+			break
 		}
 
 		if item.Name != "" {
 			break
 		}
-
-		continue
 	}
 }

@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"log"
 	"strconv"
-	"time"
 
 	nsq "github.com/bitly/go-nsq"
 )
@@ -14,8 +13,8 @@ import (
 func New() *Broker {
 	broker := Broker{}
 	broker.сonfiguration = nsq.NewConfig()
-	broker.сonfiguration.MaxInFlight = 6
-	broker.сonfiguration.MsgTimeout = time.Duration(time.Second * 6)
+	// broker.сonfiguration.MaxInFlight = 6
+	// broker.сonfiguration.MsgTimeout = time.Duration(time.Second * 6)
 	return &broker
 }
 

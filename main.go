@@ -14,7 +14,7 @@ func main() {
 
 	broker := broker.New()
 	go broker.Connect("192.168.99.100", 4150)
-	SubscribeCrawlerHandler(broker, "GetItemsFromCategoriesOfCompanys")
+	SubscribeCrawlerHandler(broker, "GetItemsFromCategoriesOfCompanys", "ItemFromCategoriesOfCompanyParsed")
 
 	httpServer.PowerUp("0.0.0.0", 8080)
 }

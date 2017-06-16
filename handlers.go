@@ -2,7 +2,6 @@ package main
 
 import (
 	"encoding/json"
-	"fmt"
 	"log"
 
 	"github.com/hecatoncheir/Hecatoncheir/broker"
@@ -18,8 +17,8 @@ type MessageEvent struct {
 }
 
 // SubscribeCrawlerHandler handler for crawling items from coduments
-func SubscribeCrawlerHandler(broker *broker.Broker, topic string) {
-	events, err := broker.ListenTopic(topic, "Crawler")
+func SubscribeCrawlerHandler(broker *broker.Broker, inputTopic string, outputTopic string) {
+	events, err := broker.ListenTopic(inputTopic, "Crawler")
 	if err != nil {
 		log.Println(err)
 	}
@@ -28,7 +27,6 @@ func SubscribeCrawlerHandler(broker *broker.Broker, topic string) {
 		for event := range events {
 			details := MessageEvent{}
 			json.Unmarshal(event, &details)
-			fmt.Println(details)
 
 			switch details.Message {
 			case "Get items from categories of company":
@@ -49,8 +47,7 @@ func SubscribeCrawlerHandler(broker *broker.Broker, topic string) {
 								data := map[string]interface{}{"Item": item}
 
 								message := MessageEvent{Message: "Item from categories of company parsed", Data: data}
-
-								broker.WriteToTopic("ItemsOfCompanies", message)
+								broker.WriteToTopic(outputTopic, message)
 							}
 						}()
 					}(configuration)
@@ -69,7 +66,7 @@ func SubscribeCrawlerHandler(broker *broker.Broker, topic string) {
 								data := map[string]interface{}{"Item": item}
 
 								message := MessageEvent{Message: "Item from categories of company parsed", Data: data}
-								broker.WriteToTopic("ItemsOfCompanies", message)
+								broker.WriteToTopic(outputTopic, message)
 							}
 						}()
 					}(configuration)
