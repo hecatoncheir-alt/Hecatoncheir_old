@@ -4,10 +4,11 @@ import "github.com/hecatoncheir/Hecatoncheir/crawler"
 
 //ItemConfig is structure of parameters for one item on page
 type ItemConfig struct {
-	ItemSelector        string
-	NameOfItemSelector  string
-	PriceOfItemSelector string
-	LinkOfItemSelector  string
+	ItemSelector               string
+	NameOfItemSelector         string
+	PriceOfItemSelector        string
+	LinkOfItemSelector         string
+	PreviewImageOfItemSelector string
 }
 
 // Page is structure of parameters for parse one web page

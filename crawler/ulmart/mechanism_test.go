@@ -56,10 +56,11 @@ func TestCrawlerCanGetDocumentByConfig(test *testing.T) {
 		CityInCookieKey:               "city",
 		CityID:                        "18414",
 		ItemConfig: ItemConfig{
-			ItemSelector:        ".b-product",
-			NameOfItemSelector:  ".b-product__title a",
-			PriceOfItemSelector: ".b-product__price .b-price__num",
-			LinkOfItemSelector:  ".b-product__title a",
+			ItemSelector:               ".b-product",
+			NameOfItemSelector:         ".b-product__title a",
+			PriceOfItemSelector:        ".b-product__price .b-price__num",
+			LinkOfItemSelector:         ".b-product__title a",
+			PreviewImageOfItemSelector: ".b-gallery2__img img",
 		},
 	}
 
