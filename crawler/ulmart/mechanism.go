@@ -46,6 +46,14 @@ func (cw *Crawler) GetItemsFromPage(document *goquery.Document, pageConfig Page,
 		link = strings.Split(link, "?")[0]
 		link = company.IRI + link
 
+		// ОТкрыть страницу с товаром и получить картинку для товара
+		itemPage, err := goquery.NewDocument(link)
+		if err != nil {
+			log.Println(err)
+		}
+
+		previewImageLink := itemPage.Find(pageConfig.PreviewImageOfItemSelector).AttrOr("src", "/")
+
 		cityName, err := cities.SearchCityByCode(pageConfig.CityID)
 		if err != nil {
 			log.Println(err)
@@ -58,10 +66,11 @@ func (cw *Crawler) GetItemsFromPage(document *goquery.Document, pageConfig Page,
 		}
 
 		pageItem := crawler.Item{
-			Name:    name,
-			Price:   priceData,
-			Company: company,
-			Link:    link,
+			Name:             name,
+			Price:            priceData,
+			Company:          company,
+			Link:             link,
+			PreviewImageLink: previewImageLink,
 		}
 
 		cw.Items <- pageItem

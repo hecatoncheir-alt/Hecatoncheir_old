@@ -1,7 +1,6 @@
 package mvideo
 
 import (
-	"fmt"
 	"testing"
 	"time"
 
@@ -14,10 +13,11 @@ func TestCrawlerCanGetDocumentByConfig(test *testing.T) {
 		PageInPaginationSelector: ".pagination-list .pagination-item",
 		PageParamPath:            "/f/page=",
 		ItemConfig: ItemConfig{
-			ItemSelector:        ".grid-view .product-tile",
-			NameOfItemSelector:  ".product-tile-title",
-			PriceOfItemSelector: ".product-price-current",
-			LinkOfItemSelector:  ".product-tile-title a",
+			ItemSelector:               ".grid-view .product-tile",
+			NameOfItemSelector:         ".product-tile-title",
+			PriceOfItemSelector:        ".product-price-current",
+			LinkOfItemSelector:         ".product-tile-title a",
+			PreviewImageOfItemSelector: ".product-tile-picture-link img",
 		},
 	}
 
@@ -42,7 +42,6 @@ func TestCrawlerCanGetDocumentByConfig(test *testing.T) {
 	}()
 
 	for item := range mechanism.Items {
-		fmt.Println(item)
 		if item.Name != "" && item.Price.Value != "" && item.Link != "" {
 			isRightItems = true
 			break

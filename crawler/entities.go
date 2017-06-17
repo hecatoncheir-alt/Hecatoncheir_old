@@ -22,10 +22,11 @@ type Price struct {
 
 // Item is a structure of one product from one page
 type Item struct {
-	Name    string
-	Price   Price
-	Link    string
-	Company Company
+	Name             string
+	Link             string
+	PreviewImageLink string
+	Price            Price
+	Company          Company
 }
 
 // Cities codes for company
