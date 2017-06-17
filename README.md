@@ -73,3 +73,28 @@ Response for all connected clients:
 	"Message": "Item from categories of company parsed"
 }
 ```
+
+## Setup
+Need NSQ:
+```docker
+docker pull nsqio/nsq
+
+docker run --name lookupd -p 4160:4160 -p 4161:4161 nsqio/nsq /nsqlookupd
+
+docker run --name nsqd -p 4150:4150 -p 4151:4151 nsqio/nsq /nsqd --broadcast-address=192.168.99.100 --lookupd-tcp-address=192.168.99.100:4160
+
+#admin panel
+docker run -p 4171:4171 nsqio/nsq /nsqadmin --lookupd-http-address=192.168.99.100:4161
+```
+
+Set NSQD addres:
+```go
+broker := broker.New()
+	go broker.Connect("192.168.99.100", 4150)
+```
+
+Subscribe
+```go
+	SubscribeCrawlerHandler(broker, "GetItemsFromCategoriesOfCompanys", "ItemFromCategoriesOfCompanyParsed")
+
+```
