@@ -31,15 +31,17 @@ func NewCrawler() *Crawler {
 // GetItemsFromPage can get product from html document by selectors in the configuration
 func (cw *Crawler) GetItemsFromPage(document *goquery.Document, pageConfig Page, company crawler.Company, patternForCutPrice *regexp.Regexp) error {
 	document.Find(pageConfig.ItemSelector).Each(func(iterator int, item *goquery.Selection) {
-		var name, price, link string
+		var name, price, link, previewImageLink string
 
 		name = item.Find(pageConfig.NameOfItemSelector).Text()
 		price = item.Find(pageConfig.PriceOfItemSelector).Text()
 		link = item.Find(pageConfig.LinkOfItemSelector).AttrOr("href", "/")
+		previewImageLink = item.Find(pageConfig.PreviewImageOfItemSelector).AttrOr("data-original", "/")
 
 		name = strings.TrimSpace(name)
 		price = strings.TrimSpace(price)
 		link = company.IRI + link
+		previewImageLink = strings.Replace(previewImageLink, "//", "", 1)
 
 		// price = strings.Replace(price, "р.", "", -1)
 		price = patternForCutPrice.ReplaceAllString(price, "")
@@ -58,10 +60,11 @@ func (cw *Crawler) GetItemsFromPage(document *goquery.Document, pageConfig Page,
 		}
 
 		pageItem := crawler.Item{
-			Name:    name,
-			Price:   priceData,
-			Link:    link,
-			Company: company,
+			Name:             name,
+			Price:            priceData,
+			Link:             link,
+			Company:          company,
+			PreviewImageLink: previewImageLink,
 		}
 
 		cw.Items <- pageItem
