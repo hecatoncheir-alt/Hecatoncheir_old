@@ -6,6 +6,7 @@ By default tcp server run on `8181` port.
 <br>
 
 > #### TODO:
+> [0] Language property <br>
 > [0] Log <br>
 > [0] REST POST method
 
