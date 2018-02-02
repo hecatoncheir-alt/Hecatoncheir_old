@@ -1,20 +1,22 @@
 package main
 
 import (
-	broker "github.com/hecatoncheir/Hecatoncheir/broker"
-	http "github.com/hecatoncheir/Hecatoncheir/http"
-	socket "github.com/hecatoncheir/Hecatoncheir/socket"
+	"github.com/hecatoncheir/Hecatoncheir/broker"
+	"github.com/hecatoncheir/Hecatoncheir/configuration"
+	"github.com/prometheus/common/log"
 )
 
 func main() {
-	httpServer := http.NewEngine("v1.0")
-	socketServer := socket.NewEngine("v1.0")
+	config, err := configuration.GetConfiguration()
+	if err != nil {
+		log.Fatal(err)
+	}
 
-	httpServer.Router.HandlerFunc("GET", "/", socketServer.ClientConnectedHandler)
+	bro := broker.New()
+	err = bro.Connect(config.Production.Broker.Host, config.Production.Broker.Port)
+	if err != nil {
+		log.Fatal(err)
+	}
 
-	broker := broker.New()
-	go broker.Connect("192.168.99.100", 4150)
-	SubscribeCrawlerHandler(broker, "GetItemsFromCategoriesOfCompanys", "ItemFromCategoriesOfCompanyParsed")
-
-	httpServer.PowerUp("0.0.0.0", 8080)
+	// TODO listening broker channel
 }

@@ -1,53 +1,20 @@
 package crawler
 
-import (
-	"errors"
-	"time"
-)
-
 // Company type for parse
 type Company struct {
-	ID         string
-	IRI        string
-	Name       string
-	Categories []string
+	ID   string
+	IRI  string
+	Name string
 }
 
-// Price structure
-type Price struct {
-	Value    string
-	City     string
-	DateTime time.Time
+// Category of company structure for parse
+type Category struct {
+	ID   string
+	Name string
 }
 
-// Item is a structure of one product from one page
-type Item struct {
-	Name             string
-	Link             string
-	PreviewImageLink string
-	Price            Price
-	Company          Company
-}
-
-// Cities codes for company
-type Cities map[string]string
-
-// SearchCodeByCity method of Cities type
-func (cities *Cities) SearchCodeByCity(cityName string) (string, error) {
-	for city, code := range *cities {
-		if city == cityName {
-			return code, nil
-		}
-	}
-	return "", errors.New("City not exist")
-}
-
-// SearchCityByCode method of Cities type
-func (cities *Cities) SearchCityByCode(codeName string) (string, error) {
-	for city, code := range *cities {
-		if code == codeName {
-			return city, nil
-		}
-	}
-	return "", errors.New("Code not exist")
+// City of products for parse
+type City struct {
+	ID   string
+	Name string
 }

@@ -46,7 +46,7 @@ func SubscribeCrawlerHandler(broker *broker.Broker, inputTopic string, outputTop
 							for item := range hecatonhair.Items {
 								data := map[string]interface{}{"Item": item}
 
-								message := MessageEvent{Message: "Item from categories of company parsed", Data: data}
+								message := MessageEvent{Message: "Product of company category parsed", Data: data}
 								broker.WriteToTopic(outputTopic, message)
 							}
 						}()
@@ -65,7 +65,7 @@ func SubscribeCrawlerHandler(broker *broker.Broker, inputTopic string, outputTop
 							for item := range hecatonhair.Items {
 								data := map[string]interface{}{"Item": item}
 
-								message := MessageEvent{Message: "Item from categories of company parsed", Data: data}
+								message := MessageEvent{Message: "Product of company category parsed", Data: data}
 								broker.WriteToTopic(outputTopic, message)
 							}
 						}()
