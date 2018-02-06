@@ -30,6 +30,7 @@ func TestUnitCompanyCanBeDecoded(test *testing.T) {
 	         "cityParam":"CityCZ_975",
 	         "itemSelector":".grid-view .product-tile",
 	         "nameOfItemSelector":".product-tile-title",
+			 "linkOfItemSelector":".product-tile-title a",
 	         "cityInCookieKey":"",
 	         "cityIdForCookie":"",
 	         "priceOfItemSelector":".product-price-current"
@@ -61,3 +62,5 @@ func TestUnitCompanyCanBeDecoded(test *testing.T) {
 		test.Fail()
 	}
 }
+
+//func TestUnitCrawlerOfCanBeCreated()

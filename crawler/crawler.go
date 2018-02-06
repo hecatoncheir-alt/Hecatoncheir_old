@@ -27,6 +27,12 @@ func NewParserFromJSON(data string) (ParserOfCompany, error) {
 	return parser, nil
 }
 
+//
+func (parser *ParserOfCompany) ReadProductsFromCategoryOfCompany() (<-chan Product, error) {
+
+	return nil, nil
+}
+
 // Company structure for parse
 type Company struct {
 	ID   string
@@ -57,6 +63,7 @@ type PageInstruction struct {
 	CityParam                  string `json:"cityParam, omitempty"`
 	ItemSelector               string `json:"itemSelector, omitempty"`
 	NameOfItemSelector         string `json:"nameOfItemSelector, omitempty"`
+	LinkOfItemSelector         string `json:"linkOfItemSelector, omitempty"`
 	CityInCookieKey            string `json:"cityInCookieKey, omitempty"`
 	CityIDForCookie            string `json:"cityIdForCookie, omitempty"`
 	PriceOfItemSelector        string `json:"priceOfItemSelector, omitempty"`
@@ -71,6 +78,7 @@ type Product struct {
 	Price            Price
 	Company          Company
 	Category         Category
+	City             City
 }
 
 // Price structure

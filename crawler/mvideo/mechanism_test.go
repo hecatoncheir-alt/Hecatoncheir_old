@@ -8,31 +8,36 @@ import (
 )
 
 func TestCrawlerCanGetDocumentByConfig(test *testing.T) {
-	smartphonesPage := Page{
-		Path: "smartfony-i-svyaz/smartfony-205",
-		PageInPaginationSelector: ".pagination-list .pagination-item",
-		PageParamPath:            "/f/page=",
-		ItemConfig: ItemConfig{
+
+	parserOfCompany := crawler.ParserOfCompany{
+		Language: "en",
+		Company: crawler.Company{
+			ID:   "0x2786",
+			Name: "M.Video",
+			IRI:  "http://www.mvideo.ru/"},
+		Category: crawler.Category{
+			ID:   "",
+			Name: "Test category of M.Video company"},
+		City: crawler.City{
+			ID:   "0x2788",
+			Name: "Москва"},
+		PageInstruction: crawler.PageInstruction{
+			ID:   "0x2789",
+			Path: "smartfony-i-svyaz/smartfony-205",
+			PageInPaginationSelector:   ".pagination-list .pagination-item",
+			PreviewImageOfItemSelector: ".product-tile-picture-link img",
+			PageParamPath:              "/f/page=",
+			CityParamPath:              "?cityId=",
+			CityParam:                  "CityCZ_975",
 			ItemSelector:               ".grid-view .product-tile",
 			NameOfItemSelector:         ".product-tile-title",
-			PriceOfItemSelector:        ".product-price-current",
 			LinkOfItemSelector:         ".product-tile-title a",
-			PreviewImageOfItemSelector: ".product-tile-picture-link img",
-		},
-	}
-
-	configuration := EntityConfig{
-		Company: crawler.Company{
-			IRI:        "http://www.mvideo.ru/",
-			Name:       "M.Video",
-			Categories: []string{"Телефоны"},
-		},
-		Pages: []Page{smartphonesPage},
+			PriceOfItemSelector:        ".product-price-current"},
 	}
 
 	mechanism := NewCrawler()
 
-	go mechanism.RunWithConfiguration(configuration)
+	go mechanism.RunWithConfiguration(parserOfCompany)
 
 	isRightItems := false
 
@@ -42,7 +47,7 @@ func TestCrawlerCanGetDocumentByConfig(test *testing.T) {
 	}()
 
 	for item := range mechanism.Items {
-		if item.Name != "" && item.Price.Value != "" && item.Link != "" {
+		if item.Name != "" && item.Price.Value != "" && item.IRI != "" {
 			isRightItems = true
 			break
 		}

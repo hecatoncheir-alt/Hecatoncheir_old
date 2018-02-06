@@ -7,9 +7,8 @@ import (
 	"strings"
 	"time"
 
-	"github.com/hecatoncheir/Hecatoncheir/crawler"
-
 	"github.com/PuerkitoBio/goquery"
+	"github.com/hecatoncheir/Hecatoncheir/crawler"
 )
 
 var cities = crawler.Cities{
@@ -19,17 +18,17 @@ var cities = crawler.Cities{
 
 // Crawler for parse documents
 type Crawler struct {
-	Items chan crawler.Item // For subscribe to events
+	Items chan crawler.Product // For subscribe to events
 }
 
 // NewCrawler create a new Crawler object
 func NewCrawler() *Crawler {
-	crawler := Crawler{Items: make(chan crawler.Item)}
-	return &crawler
+	parser := Crawler{Items: make(chan crawler.Product)}
+	return &parser
 }
 
 // GetItemsFromPage can get product from html document by selectors in the configuration
-func (cw *Crawler) GetItemsFromPage(document *goquery.Document, pageConfig Page, company crawler.Company, patternForCutPrice *regexp.Regexp) error {
+func (parser *Crawler) GetItemsFromPage(document *goquery.Document, pageConfig crawler.PageInstruction, company crawler.Company, patternForCutPrice *regexp.Regexp) error {
 	document.Find(pageConfig.ItemSelector).Each(func(iterator int, item *goquery.Selection) {
 		var name, price, link, previewImageLink string
 
@@ -59,62 +58,66 @@ func (cw *Crawler) GetItemsFromPage(document *goquery.Document, pageConfig Page,
 			DateTime: time.Now().UTC(),
 		}
 
-		pageItem := crawler.Item{
+		pageItem := crawler.Product{
 			Name:             name,
 			Price:            priceData,
-			Link:             link,
+			IRI:              link,
 			Company:          company,
 			PreviewImageLink: previewImageLink,
 		}
 
-		cw.Items <- pageItem
+		parser.Items <- pageItem
 	})
 
 	return nil
 }
 
 // RunWithConfiguration can parse web documents and make Item structure for each product on page filtered by selectors
-func (cw *Crawler) RunWithConfiguration(config EntityConfig) error {
+func (parser *Crawler) RunWithConfiguration(config crawler.ParserOfCompany) error {
 	patternForCutPrice, _ := regexp.Compile("р[уб]*?.")
 
-	for _, pageConfig := range config.Pages {
+	pageConfig := config.PageInstruction
 
-		document, err := goquery.NewDocument(config.Company.IRI + pageConfig.Path + pageConfig.PageParamPath + "1" + pageConfig.CityParamPath + pageConfig.CityParam)
-		if err != nil {
-			return err
-		}
-
-		go cw.GetItemsFromPage(document, pageConfig, config.Company, patternForCutPrice)
-
-		pagesCount := document.Find(pageConfig.PageInPaginationSelector).Last().Find("a").Text()
-
-		countOfPages, err := strconv.Atoi(pagesCount)
-		if err != nil {
-			return err
-		}
-
-		pagesCrawling := make(chan func(), 6)
-
-		go func() {
-			for crawler := range pagesCrawling {
-				go crawler()
-			}
-		}()
-
-		var iterator int
-		for iterator = 2; iterator <= countOfPages; iterator++ {
-			document, err := goquery.NewDocument(config.Company.IRI + pageConfig.Path + pageConfig.PageParamPath + strconv.Itoa(iterator) + pageConfig.CityParamPath + pageConfig.CityParam)
-			if err != nil {
-				return err
-			}
-
-			pagesCrawling <- func() {
-				cw.GetItemsFromPage(document, pageConfig, config.Company, patternForCutPrice)
-			}
-		}
-
-		close(pagesCrawling)
+	document, err := goquery.NewDocument(config.Company.IRI + pageConfig.Path + pageConfig.PageParamPath + "1" + pageConfig.CityParamPath + pageConfig.CityParam)
+	if err != nil {
+		return err
 	}
+
+	go parser.GetItemsFromPage(document, pageConfig, config.Company, patternForCutPrice)
+
+	pagesCount := document.Find(pageConfig.PageInPaginationSelector).Last().Find("a").Text()
+
+	countOfPages, err := strconv.Atoi(pagesCount)
+	if err != nil {
+		return err
+	}
+
+	maxProductsForChannel := 6
+
+	pagesCrawling := make(chan func(), maxProductsForChannel)
+
+	go func() {
+		for craw := range pagesCrawling {
+			go craw()
+		}
+	}()
+
+	// Because first page already parsed for get pages count
+	pageNumberFromCrawlingStart := 2
+
+	var iterator int
+	for iterator = pageNumberFromCrawlingStart; iterator <= countOfPages; iterator++ {
+		document, err := goquery.NewDocument(config.Company.IRI + pageConfig.Path + pageConfig.PageParamPath + strconv.Itoa(iterator) + pageConfig.CityParamPath + pageConfig.CityParam)
+		if err != nil {
+			return err
+		}
+
+		pagesCrawling <- func() {
+			parser.GetItemsFromPage(document, pageConfig, config.Company, patternForCutPrice)
+		}
+	}
+
+	close(pagesCrawling)
 
 	return nil
 }
