@@ -3,6 +3,7 @@ package crawler
 import (
 	"encoding/json"
 	"time"
+	"fmt"
 )
 
 // ParserOfCompany is a type for parse company products
@@ -27,7 +28,7 @@ func NewParserFromJSON(data string) (ParserOfCompany, error) {
 	return parser, nil
 }
 
-//
+// TODO
 func (parser *ParserOfCompany) ReadProductsFromCategoryOfCompany() (<-chan Product, error) {
 
 	return nil, nil

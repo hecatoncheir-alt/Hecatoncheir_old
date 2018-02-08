@@ -65,7 +65,7 @@ func (broker *Broker) WriteToTopic(topic string, message interface{}) error {
 
 // ListenTopic get events in channel of topic
 func (broker *Broker) ListenTopic(topic string, channel string) (<-chan []byte, error) {
-	consumer, err := nsq.NewConsumer(topic, channel, broker.сonfiguration)
+	consumer, err := nsq.NewConsumer(topic, channel, broker.configuration)
 	if err != nil {
 		return nil, err
 	}

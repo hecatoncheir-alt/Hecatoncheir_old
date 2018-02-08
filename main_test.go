@@ -1,275 +1,105 @@
 package main
 
 import (
-	"encoding/json"
-	"sync"
-	"testing"
-
 	"github.com/hecatoncheir/Hecatoncheir/broker"
+	"github.com/hecatoncheir/Hecatoncheir/configuration"
+
+	"encoding/json"
+	"fmt"
 	"github.com/hecatoncheir/Hecatoncheir/crawler"
-	"github.com/hecatoncheir/Hecatoncheir/crawler/mvideo"
-	"github.com/hecatoncheir/Hecatoncheir/crawler/ulmart"
-	"github.com/hecatoncheir/Hecatoncheir/socket"
-
-	"golang.org/x/net/websocket"
+	"testing"
 )
 
-var (
-	once sync.Once
-)
-
-func SetUpSocketServer() {
-	server := socket.NewEngine("v1.0")
-	server.PowerUp("localhost", 8181)
-	defer server.Server.Close()
-}
-
-// {
-// 	"Message": "Get items from categories of company",
-// 	"Data": {
-// 			"Iri": "http://www.mvideo.ru/",
-//			"Name": "M.Video",
-//			"Categories": ["Телефоны"],
-// 			"Pages": [{
-// 				"Path": "smartfony-i-svyaz/smartfony-205",
-// 				"PageInPaginationSelector": ".pagination-list .pagination-item",
-// 				"PageParamPath": "/f/page=",
-// 				"CityParamPath": "?cityId=",
-// 				"CityParam": "CityCZ_975",
-// 				"ItemSelector": ".grid-view .product-tile",
-// 				"NameOfItemSelector": ".product-tile-title",
-// 				"PriceOfItemSelector": ".product-price-current"
-// 			}]
-// 	}
-// }
-func TestSocketCanParseDocumentOfMvideo(test *testing.T) {
-	go once.Do(SetUpSocketServer)
-
-	client, err := websocket.Dial("ws://localhost:8181", "", "http://localhost:8181")
-
+func TestIntegrationCanParseCategoryOfCompanyByBrokerEventRequest(test *testing.T) {
+	config, err := configuration.GetConfiguration()
 	if err != nil {
-		test.Fatal()
-	}
-
-	smartphonesPage := mvideo.Page{
-		Path: "smartfony-i-svyaz/smartfony-205",
-		PageInPaginationSelector: ".pagination-list .pagination-item",
-		PageParamPath:            "/f/page=",
-		CityParamPath:            "?cityId=",
-		CityParam:                "CityCZ_975",
-		ItemConfig: mvideo.ItemConfig{
-			ItemSelector:        ".grid-view .product-tile",
-			NameOfItemSelector:  ".product-tile-title",
-			PriceOfItemSelector: ".product-price-current",
-		},
-	}
-
-	configuration := mvideo.EntityConfig{
-		Company: crawler.Company{
-			IRI:        "http://www.mvideo.ru/",
-			Name:       "M.Video",
-			Categories: []string{"Телефоны"},
-		},
-		Pages: []mvideo.Page{smartphonesPage},
-	}
-
-	websocket.JSON.Send(client, socket.MessageEvent{Message: "Get items from categories of company", Data: configuration})
-
-	message := make(chan socket.MessageEvent)
-
-	go func() {
-		for {
-			socketEvent := socket.MessageEvent{}
-			err := websocket.JSON.Receive(client, &socketEvent)
-			if err != nil {
-				test.Error(err)
-			}
-			message <- socketEvent
-			break
-		}
-	}()
-
-	for event := range message {
-		if event.Message != "Item from categories of company parsed" ||
-			event.Data.(map[string]interface{})["Item"] == nil {
-			test.Fail()
-		}
-		break
-	}
-}
-
-//{
-//	"Message": "Get items from categories of company",
-//	"Data": {
-//			"Iri": "https://www.ulmart.ru/",
-//		"Name": "Ulmart",
-//		"Categories": ["Телефоны"],
-//			"Pages": [{
-//      "Path":                          "catalog/communicators",
-//      "TotalCountItemsOnPageSelector": "#total-show-count",
-//      "MaxItemsOnPageSelector":        "#max-show-count",
-//      "PagePath":                      "catalogAdditional/communicators",
-//      "PageParamPath":                 "?pageNum=",
-//      "CityInCookieKey":               "city",
-//      "CityID":                        "18414",
-//				"ItemSelector": ".b-product",
-//				"NameOfItemSelector": ".b-product__title a",
-//				"PriceOfItemSelector": ".b-product__price .b-price__num"
-//			}]
-//	}
-//}
-func TestSocketCanParseDocumentOfUlmart(test *testing.T) {
-	go once.Do(SetUpSocketServer)
-
-	client, err := websocket.Dial("ws://localhost:8181", "", "http://localhost:8181")
-
-	if err != nil {
-		test.Fatal()
-	}
-
-	smartphonesPage := ulmart.Page{
-		Path: "catalog/communicators",
-		TotalCountItemsOnPageSelector: "#total-show-count",
-		MaxItemsOnPageSelector:        "#max-show-count",
-		PagePath:                      "catalogAdditional/communicators",
-		PageParamPath:                 "?pageNum=",
-		CityInCookieKey:               "city",
-		CityID:                        "18414",
-		ItemConfig: ulmart.ItemConfig{
-			ItemSelector:        ".b-product",
-			NameOfItemSelector:  ".b-product__title a",
-			PriceOfItemSelector: ".b-product__price .b-price__num",
-			LinkOfItemSelector:  ".b-product__title a",
-		},
-	}
-
-	configuration := ulmart.EntityConfig{
-		Company: crawler.Company{
-			IRI:        "https://www.ulmart.ru/",
-			Name:       "Ulmart",
-			Categories: []string{"Телефоны"},
-		},
-		Pages: []ulmart.Page{smartphonesPage},
-	}
-
-	websocket.JSON.Send(client, socket.MessageEvent{Message: "Get items from categories of company", Data: configuration})
-
-	message := make(chan socket.MessageEvent)
-
-	go func() {
-		for {
-			socketEvent := socket.MessageEvent{}
-			err := websocket.JSON.Receive(client, &socketEvent)
-			if err != nil {
-				test.Error(err)
-			}
-			message <- socketEvent
-			break
-		}
-	}()
-
-	for event := range message {
-		if event.Message != "Item from categories of company parsed" ||
-			event.Data.(map[string]interface{})["Item"] == nil {
-			test.Fail()
-		}
-		break
-	}
-}
-
-func TestBrokerMessaging(test *testing.T) {
-	var err error
-
-	// request := `{
-	// "Message": "Get items from categories of company",
-	// "Data": {
-	// 	"Iri": "https://www.ulmart.ru/",
-	// 	"Name": "Ulmart",
-	// 	"Categories": ["Телефоны"],
-	// 		"Pages": [{
-	// 			"Path":                          "catalog/communicators",
-	// 			"TotalCountItemsOnPageSelector": "#total-show-count",
-	// 			"MaxItemsOnPageSelector":        "#max-show-count",
-	// 			"PagePath":                      "catalogAdditional/communicators",
-	// 			"PageParamPath":                 "?pageNum=",
-	// 			"CityInCookieKey":               "city",
-	// 			"CityID":                        "18414",
-	// 			"ItemSelector": ".b-product",
-	// 			"NameOfItemSelector": ".b-product__title a",
-	// 			"PriceOfItemSelector": ".b-product__price .b-price__num",
-	// 			"LinkOfItemSelector": ".b-product__title a"
-	// 		}]
-	// 	}
-	// }"`
-
-	smartphonesPage := ulmart.Page{
-		Path: "catalog/communicators",
-		TotalCountItemsOnPageSelector: "#total-show-count",
-		MaxItemsOnPageSelector:        "#max-show-count",
-		PagePath:                      "catalogAdditional/communicators",
-		PageParamPath:                 "?pageNum=",
-		CityInCookieKey:               "city",
-		CityID:                        "18414",
-		ItemConfig: ulmart.ItemConfig{
-			ItemSelector:        ".b-product",
-			NameOfItemSelector:  ".b-product__title a",
-			PriceOfItemSelector: ".b-product__price .b-price__num",
-			LinkOfItemSelector:  ".b-product__title a",
-		},
-	}
-
-	configuration := ulmart.EntityConfig{
-		Company: crawler.Company{
-			IRI:        "https://www.ulmart.ru/",
-			Name:       "Ulmart",
-			Categories: []string{"Телефоны"},
-		},
-		Pages: []ulmart.Page{smartphonesPage},
+		test.Error(err)
 	}
 
 	bro := broker.New()
-	err = bro.Connect("192.168.99.100", 4150)
+
+	err = bro.Connect(config.Development.Broker.Host, config.Development.Broker.Port)
 	if err != nil {
 		test.Error(err)
 	}
 
-	go SubscribeCrawlerHandler(bro, "CrawlingRequest", "ItemsOfCompanies")
-
-	items, err := bro.ListenTopic("ItemsOfCompanies", "test")
+	channel, err := bro.ListenTopic("test", "Parser")
 	if err != nil {
 		test.Error(err)
 	}
 
-	request := MessageEvent{Message: "Get items from categories of company", Data: configuration}
+	parserOfCompany := crawler.ParserOfCompany{
+		Language: "en",
+		Company: crawler.Company{
+			ID:   "0x2786",
+			Name: "M.Video",
+			IRI:  "http://www.mvideo.ru/"},
+		Category: crawler.Category{
+			ID:   "",
+			Name: "Test category of M.Video company"},
+		City: crawler.City{
+			ID:   "0x2788",
+			Name: "Москва"},
+		PageInstruction: crawler.PageInstruction{
+			ID:   "0x2789",
+			Path: "smartfony-i-svyaz/smartfony-205",
+			PageInPaginationSelector:   ".pagination-list .pagination-item",
+			PreviewImageOfItemSelector: ".product-tile-picture-link img",
+			PageParamPath:              "/f/page=",
+			CityParamPath:              "?cityId=",
+			CityParam:                  "CityCZ_975",
+			ItemSelector:               ".grid-view .product-tile",
+			NameOfItemSelector:         ".product-tile-title",
+			LinkOfItemSelector:         ".product-tile-title a",
+			PriceOfItemSelector:        ".product-price-current"},
+	}
 
-	err = bro.WriteToTopic("CrawlingRequest", request)
+	parseData, err := json.Marshal(parserOfCompany)
 	if err != nil {
 		test.Error(err)
 	}
 
-	for data := range items {
-		event := MessageEvent{}
-		json.Unmarshal(data, &event)
+	go bro.WriteToTopic("test", map[string]interface{}{"Message": "Need products of category of company", "Data": string(parseData)})
 
-		if event.Message != "Item from categories of company parsed" {
+	for message := range channel {
+		data := map[string]string{}
+		json.Unmarshal(message, &data)
+
+		if data["Message"] != "Need products of category of company" {
 			test.Fail()
-			break
 		}
 
-		item := crawler.Item{}
-		itemBytes, err := json.Marshal(event.Data.(map[string]interface{})["Item"])
+		parserOfCompany, err := crawler.NewParserFromJSON(data["Data"])
 		if err != nil {
 			test.Error(err)
 		}
-		json.Unmarshal(itemBytes, &item)
 
-		if item.Name == "" {
-			test.Fail()
+		channelWithProducts, err := parserOfCompany.ReadProductsFromCategoryOfCompany()
+		if err != nil {
+			test.Error(err)
+		}
+
+		for product := range channelWithProducts {
+			//TODO
+			parsedProduct, err := json.Marshal(product)
+			if err != nil {
+				test.Error(err)
+			}
+
+			go bro.WriteToTopic("test", map[string]interface{}{"Message": "Product of category of company ready", "Data": string(parsedProduct)})
 			break
 		}
 
-		if item.Name != "" {
-			break
-		}
+		break
 	}
+
+	for message := range channel {
+		data := map[string]interface{}{}
+		json.Unmarshal(message, &data)
+
+		fmt.Println(data["Message"])
+
+		break
+	}
+
 }

@@ -20,3 +20,5 @@ func main() {
 
 	// TODO listening broker channel
 }
+
+func handlesNeedProductsOfCategoryOfCompanyEvent() {}

@@ -6,6 +6,7 @@ import (
 	"sync"
 	"testing"
 
+	"github.com/hecatoncheir/Hecatoncheir/configuration"
 	"github.com/hecatoncheir/Hecatoncheir/crawler"
 )
 
@@ -15,7 +16,12 @@ var once sync.Once
 func SetUp() {
 	broker = New()
 
-	err := broker.Connect("192.168.99.100", 4150)
+	config, err := configuration.GetConfiguration()
+	if err != nil {
+		log.Println(err)
+	}
+
+	err = broker.Connect(config.Development.Broker.Host, config.Development.Broker.Port)
 	if err != nil {
 		log.Println("Need started NSQ")
 		log.Println(err)

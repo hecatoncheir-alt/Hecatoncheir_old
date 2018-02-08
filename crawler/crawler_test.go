@@ -62,5 +62,3 @@ func TestUnitCompanyCanBeDecoded(test *testing.T) {
 		test.Fail()
 	}
 }
-
-//func TestUnitCrawlerOfCanBeCreated()
