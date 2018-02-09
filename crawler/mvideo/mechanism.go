@@ -7,6 +7,7 @@ import (
 	"strings"
 	"time"
 
+	"fmt"
 	"github.com/PuerkitoBio/goquery"
 	"github.com/hecatoncheir/Hecatoncheir/crawler"
 )
@@ -28,7 +29,9 @@ func NewCrawler() *Crawler {
 }
 
 // GetItemsFromPage can get product from html document by selectors in the configuration
-func (parser *Crawler) GetItemsFromPage(document *goquery.Document, pageConfig crawler.PageInstruction, company crawler.Company, patternForCutPrice *regexp.Regexp) error {
+func (parser *Crawler) GetItemsFromPage(document *goquery.Document, config crawler.ParserOfCompanyInstructions, patternForCutPrice *regexp.Regexp) error {
+	pageConfig := config.PageInstruction
+
 	document.Find(pageConfig.ItemSelector).Each(func(iterator int, item *goquery.Selection) {
 		var name, price, link, previewImageLink string
 
@@ -39,7 +42,7 @@ func (parser *Crawler) GetItemsFromPage(document *goquery.Document, pageConfig c
 
 		name = strings.TrimSpace(name)
 		price = strings.TrimSpace(price)
-		link = company.IRI + link
+		link = config.Company.IRI + link
 		previewImageLink = strings.Replace(previewImageLink, "//", "", 1)
 
 		// price = strings.Replace(price, "р.", "", -1)
@@ -47,14 +50,9 @@ func (parser *Crawler) GetItemsFromPage(document *goquery.Document, pageConfig c
 
 		//fmt.Printf("Review %s: %s \n", name, price)
 
-		cityName, err := cities.SearchCityByCode(pageConfig.CityParam)
-		if err != nil {
-			log.Println(err)
-		}
-
 		priceData := crawler.Price{
 			Value:    price,
-			City:     cityName,
+			City:     config.City,
 			DateTime: time.Now().UTC(),
 		}
 
@@ -62,9 +60,14 @@ func (parser *Crawler) GetItemsFromPage(document *goquery.Document, pageConfig c
 			Name:             name,
 			Price:            priceData,
 			IRI:              link,
-			Company:          company,
+			Company:          config.Company,
+			Language:         config.Language,
+			City:             config.City,
+			Category:         config.Category,
 			PreviewImageLink: previewImageLink,
 		}
+
+		log.Println(fmt.Sprintf("Product: '%v' of category: '%v' of company: '%v' parsed. Price: '%s'", name, config.Category.Name, config.Company.Name, priceData.Value))
 
 		parser.Items <- pageItem
 	})
@@ -73,17 +76,22 @@ func (parser *Crawler) GetItemsFromPage(document *goquery.Document, pageConfig c
 }
 
 // RunWithConfiguration can parse web documents and make Item structure for each product on page filtered by selectors
-func (parser *Crawler) RunWithConfiguration(config crawler.ParserOfCompany) error {
+func (parser *Crawler) RunWithConfiguration(config crawler.ParserOfCompanyInstructions) error {
 	patternForCutPrice, _ := regexp.Compile("р[уб]*?.")
 
 	pageConfig := config.PageInstruction
 
-	document, err := goquery.NewDocument(config.Company.IRI + pageConfig.Path + pageConfig.PageParamPath + "1" + pageConfig.CityParamPath + pageConfig.CityParam)
+	cityCode, err := cities.SearchCodeByCityName(config.City.Name)
 	if err != nil {
 		return err
 	}
 
-	go parser.GetItemsFromPage(document, pageConfig, config.Company, patternForCutPrice)
+	document, err := goquery.NewDocument(config.Company.IRI + pageConfig.Path + pageConfig.PageParamPath + "1" + pageConfig.CityParamPath + cityCode)
+	if err != nil {
+		return err
+	}
+
+	go parser.GetItemsFromPage(document, config, patternForCutPrice)
 
 	pagesCount := document.Find(pageConfig.PageInPaginationSelector).Last().Find("a").Text()
 
@@ -107,13 +115,13 @@ func (parser *Crawler) RunWithConfiguration(config crawler.ParserOfCompany) erro
 
 	var iterator int
 	for iterator = pageNumberFromCrawlingStart; iterator <= countOfPages; iterator++ {
-		document, err := goquery.NewDocument(config.Company.IRI + pageConfig.Path + pageConfig.PageParamPath + strconv.Itoa(iterator) + pageConfig.CityParamPath + pageConfig.CityParam)
+		document, err := goquery.NewDocument(config.Company.IRI + pageConfig.Path + pageConfig.PageParamPath + strconv.Itoa(iterator) + pageConfig.CityParamPath + cityCode)
 		if err != nil {
 			return err
 		}
 
 		pagesCrawling <- func() {
-			parser.GetItemsFromPage(document, pageConfig, config.Company, patternForCutPrice)
+			parser.GetItemsFromPage(document, config, patternForCutPrice)
 		}
 	}
 

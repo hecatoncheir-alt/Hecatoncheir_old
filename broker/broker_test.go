@@ -53,20 +53,20 @@ func TestBrokerCanSendMessageToNSQ(test *testing.T) {
 	var err error
 	once.Do(SetUp)
 
-	item := crawler.Item{Name: "test item"}
+	item := crawler.Product{Name: "test item"}
 
-	items, err := broker.ListenTopic("ItemsOfCompanies", "test")
+	items, err := broker.ListenTopic("test", "Parser")
 	if err != nil {
 		test.Error(err)
 	}
 
-	err = broker.WriteToTopic("ItemsOfCompanies", item)
+	err = broker.WriteToTopic("test", item)
 	if err != nil {
 		test.Error(err)
 	}
 
 	for item := range items {
-		data := crawler.Item{}
+		data := crawler.Product{}
 		json.Unmarshal(item, &data)
 		if data.Name == "test item" {
 			break

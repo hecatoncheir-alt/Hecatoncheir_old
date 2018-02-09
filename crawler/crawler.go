@@ -3,11 +3,10 @@ package crawler
 import (
 	"encoding/json"
 	"time"
-	"fmt"
 )
 
 // ParserOfCompany is a type for parse company products
-type ParserOfCompany struct {
+type ParserOfCompanyInstructions struct {
 	Language        string
 	Company         Company
 	Category        Category
@@ -16,22 +15,16 @@ type ParserOfCompany struct {
 	Products        []Product
 }
 
-// NewParserFromJSON is a constructor for ParserOfCompany from json string
-func NewParserFromJSON(data string) (ParserOfCompany, error) {
+// NewParserInstructionsFromJSON is a constructor for ParserOfCompany from json string
+func NewParserInstructionsFromJSON(data string) (ParserOfCompanyInstructions, error) {
 
-	parser := ParserOfCompany{}
+	parser := ParserOfCompanyInstructions{}
 	err := json.Unmarshal([]byte(data), &parser)
 	if err != nil {
 		return parser, err
 	}
 
 	return parser, nil
-}
-
-// TODO
-func (parser *ParserOfCompany) ReadProductsFromCategoryOfCompany() (<-chan Product, error) {
-
-	return nil, nil
 }
 
 // Company structure for parse
@@ -61,13 +54,13 @@ type PageInstruction struct {
 	PreviewImageOfItemSelector string `json:"previewImageOfSelector, omitempty"`
 	PageParamPath              string `json:"pageParamPath, omitempty"`
 	CityParamPath              string `json:"cityParamPath, omitempty"`
-	CityParam                  string `json:"cityParam, omitempty"`
-	ItemSelector               string `json:"itemSelector, omitempty"`
-	NameOfItemSelector         string `json:"nameOfItemSelector, omitempty"`
-	LinkOfItemSelector         string `json:"linkOfItemSelector, omitempty"`
-	CityInCookieKey            string `json:"cityInCookieKey, omitempty"`
-	CityIDForCookie            string `json:"cityIdForCookie, omitempty"`
-	PriceOfItemSelector        string `json:"priceOfItemSelector, omitempty"`
+	//CityParam                  string `json:"cityParam, omitempty"`
+	ItemSelector        string `json:"itemSelector, omitempty"`
+	NameOfItemSelector  string `json:"nameOfItemSelector, omitempty"`
+	LinkOfItemSelector  string `json:"linkOfItemSelector, omitempty"`
+	CityInCookieKey     string `json:"cityInCookieKey, omitempty"`
+	CityIDForCookie     string `json:"cityIdForCookie, omitempty"`
+	PriceOfItemSelector string `json:"priceOfItemSelector, omitempty"`
 }
 
 // Product is a structure of one product from one page
@@ -85,6 +78,6 @@ type Product struct {
 // Price structure
 type Price struct {
 	Value    string
-	City     string
+	City     City
 	DateTime time.Time
 }

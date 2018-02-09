@@ -5,9 +5,9 @@ import (
 	"github.com/hecatoncheir/Hecatoncheir/configuration"
 
 	"encoding/json"
-	"fmt"
-	"github.com/hecatoncheir/Hecatoncheir/crawler"
 	"testing"
+
+	"github.com/hecatoncheir/Hecatoncheir/crawler"
 )
 
 func TestIntegrationCanParseCategoryOfCompanyByBrokerEventRequest(test *testing.T) {
@@ -28,7 +28,7 @@ func TestIntegrationCanParseCategoryOfCompanyByBrokerEventRequest(test *testing.
 		test.Error(err)
 	}
 
-	parserOfCompany := crawler.ParserOfCompany{
+	parserOfCompany := crawler.ParserOfCompanyInstructions{
 		Language: "en",
 		Company: crawler.Company{
 			ID:   "0x2786",
@@ -47,7 +47,6 @@ func TestIntegrationCanParseCategoryOfCompanyByBrokerEventRequest(test *testing.
 			PreviewImageOfItemSelector: ".product-tile-picture-link img",
 			PageParamPath:              "/f/page=",
 			CityParamPath:              "?cityId=",
-			CityParam:                  "CityCZ_975",
 			ItemSelector:               ".grid-view .product-tile",
 			NameOfItemSelector:         ".product-tile-title",
 			LinkOfItemSelector:         ".product-tile-title a",
@@ -69,37 +68,28 @@ func TestIntegrationCanParseCategoryOfCompanyByBrokerEventRequest(test *testing.
 			test.Fail()
 		}
 
-		parserOfCompany, err := crawler.NewParserFromJSON(data["Data"])
-		if err != nil {
-			test.Error(err)
-		}
-
-		channelWithProducts, err := parserOfCompany.ReadProductsFromCategoryOfCompany()
-		if err != nil {
-			test.Error(err)
-		}
-
-		for product := range channelWithProducts {
-			//TODO
-			parsedProduct, err := json.Marshal(product)
-			if err != nil {
-				test.Error(err)
-			}
-
-			go bro.WriteToTopic("test", map[string]interface{}{"Message": "Product of category of company ready", "Data": string(parsedProduct)})
-			break
-		}
+		go handlesNeedProductsOfCategoryOfCompanyEvent(data["Data"], bro, "test")
 
 		break
 	}
 
-	for message := range channel {
+	channelForGetProducts, err := bro.ListenTopic("test", "Parser")
+	if err != nil {
+		test.Error(err)
+	}
+
+	for message := range channelForGetProducts {
 		data := map[string]interface{}{}
 		json.Unmarshal(message, &data)
 
-		fmt.Println(data["Message"])
+		if data["Message"] != "Product of category of company ready" {
+			test.Fail()
+		}
+
+		if data["Data"].(map[string]interface{})["Language"] != "en" {
+			test.Fail()
+		}
 
 		break
 	}
-
 }

@@ -9,7 +9,7 @@ import (
 
 func TestCrawlerCanGetDocumentByConfig(test *testing.T) {
 
-	parserOfCompany := crawler.ParserOfCompany{
+	parserOfCompany := crawler.ParserOfCompanyInstructions{
 		Language: "en",
 		Company: crawler.Company{
 			ID:   "0x2786",
@@ -28,11 +28,11 @@ func TestCrawlerCanGetDocumentByConfig(test *testing.T) {
 			PreviewImageOfItemSelector: ".product-tile-picture-link img",
 			PageParamPath:              "/f/page=",
 			CityParamPath:              "?cityId=",
-			CityParam:                  "CityCZ_975",
-			ItemSelector:               ".grid-view .product-tile",
-			NameOfItemSelector:         ".product-tile-title",
-			LinkOfItemSelector:         ".product-tile-title a",
-			PriceOfItemSelector:        ".product-price-current"},
+			//CityParam:                  "CityCZ_975",
+			ItemSelector:        ".grid-view .product-tile",
+			NameOfItemSelector:  ".product-tile-title",
+			LinkOfItemSelector:  ".product-tile-title a",
+			PriceOfItemSelector: ".product-price-current"},
 	}
 
 	mechanism := NewCrawler()

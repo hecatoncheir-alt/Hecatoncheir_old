@@ -37,7 +37,7 @@ func TestUnitCompanyCanBeDecoded(test *testing.T) {
           }
 	    }`
 
-	parser, err := NewParserFromJSON(inputCompany)
+	parser, err := NewParserInstructionsFromJSON(inputCompany)
 	if err != nil {
 		test.Error(err)
 	}
