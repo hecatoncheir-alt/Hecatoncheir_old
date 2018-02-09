@@ -1,6 +1,7 @@
 package main
 
 import (
+	"encoding/json"
 	"fmt"
 	"github.com/hecatoncheir/Hecatoncheir/broker"
 	"github.com/hecatoncheir/Hecatoncheir/configuration"
@@ -21,7 +22,19 @@ func main() {
 		log.Fatal(err)
 	}
 
-	// TODO listening broker channel
+	channel, err := bro.ListenTopic(config.ApiVersion, "Parser")
+	if err != nil {
+		log.Error(err)
+	}
+
+	for message := range channel {
+		data := map[string]string{}
+		json.Unmarshal(message, &data)
+
+		if data["Message"] != "Need products of category of company" {
+			go handlesNeedProductsOfCategoryOfCompanyEvent(data["Data"], bro, config.ApiVersion)
+		}
+	}
 }
 
 func handlesNeedProductsOfCategoryOfCompanyEvent(parserInstructionsJSON string, bro *broker.Broker, topic string) {
