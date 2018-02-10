@@ -3,11 +3,12 @@ package main
 import (
 	"encoding/json"
 	"fmt"
+	"log"
+
 	"github.com/hecatoncheir/Hecatoncheir/broker"
 	"github.com/hecatoncheir/Hecatoncheir/configuration"
 	"github.com/hecatoncheir/Hecatoncheir/crawler"
 	"github.com/hecatoncheir/Hecatoncheir/crawler/mvideo"
-	"github.com/prometheus/common/log"
 )
 
 func main() {
@@ -22,10 +23,14 @@ func main() {
 		log.Fatal(err)
 	}
 
-	channel, err := bro.ListenTopic(config.ApiVersion, "Parser")
+	channelName := "Parser"
+
+	channel, err := bro.ListenTopic(config.ApiVersion, channelName)
 	if err != nil {
-		log.Error(err)
+		log.Println(err)
 	}
+
+	log.Println(fmt.Sprintf("Listen topic: '%v' on channel: '%v'", config.ApiVersion, channelName))
 
 	for message := range channel {
 		data := map[string]string{}
@@ -41,7 +46,7 @@ func handlesNeedProductsOfCategoryOfCompanyEvent(parserInstructionsJSON string, 
 	fmt.Println(parserInstructionsJSON)
 	parserInstructionsOfCompany, err := crawler.NewParserInstructionsFromJSON(parserInstructionsJSON)
 	if err != nil {
-		log.Error(err)
+		log.Println(err)
 	}
 
 	if parserInstructionsOfCompany.Company.IRI == "http://www.mvideo.ru/" {

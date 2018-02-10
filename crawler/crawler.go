@@ -12,7 +12,6 @@ type ParserOfCompanyInstructions struct {
 	Category        Category
 	City            City
 	PageInstruction PageInstruction
-	Products        []Product
 }
 
 // NewParserInstructionsFromJSON is a constructor for ParserOfCompany from json string
@@ -54,7 +53,6 @@ type PageInstruction struct {
 	PreviewImageOfItemSelector string `json:"previewImageOfSelector, omitempty"`
 	PageParamPath              string `json:"pageParamPath, omitempty"`
 	CityParamPath              string `json:"cityParamPath, omitempty"`
-	//CityParam                  string `json:"cityParam, omitempty"`
 	ItemSelector        string `json:"itemSelector, omitempty"`
 	NameOfItemSelector  string `json:"nameOfItemSelector, omitempty"`
 	LinkOfItemSelector  string `json:"linkOfItemSelector, omitempty"`

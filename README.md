@@ -1,77 +1,81 @@
 # Hecatoncheir
-Crawler with websocket and rest api
-
-By default tcp server run on `8181` port.
 
 <br>
 
 > #### TODO:
-> [0] Language property <br>
+> [✓] Language property <br>
 > [0] Log <br>
-> [0] REST POST method
 
-## REST API:
-
-[✓] GET `api/version` <br>
-Response json: `{"apiVersion":"v1.0"}` 
-
-## Socket
-<br>
-Send message:
-
-```
-{"Message":"Need api version"}
-```
-Response:
-
-```
-{"Message": "Version of API", "Data": {"API version": "v1.0"}
-```
- 
 ---
-Send message:
+Send message to broker:
 
 ```json
  {
- 	"Message": "Get items from categories of company",
+ 	"Message": "Need products of category of company",
  	"Data": {
-			"Iri": "http://link of company",
-			"Name": "Name of company",
-			"Categories": ["Some categories id or name"],
- 			"Pages": [{
- 				"Path": "path to search page",
- 				"PageInPaginationSelector": ".pagination-list .pagination-item",
- 				"PageParamPath": "/f/page=",
- 				"CityParamPath": "?cityId=",
- 				"CityParam": "CityCZ_975",
- 				"ItemSelector": ".grid-view .product-tile",
- 				"NameOfItemSelector": ".product-tile-title",
- 				"PriceOfItemSelector": ".product-price-current"
- 			}]
- 	}
+               "Language":"en",
+               "Company":{  
+                  "ID":"0x2786",
+                  "Name":"M.Video",
+                  "IRI":"http://www.mvideo.ru/"
+               },
+               "Category":{  
+                  "ID":"",
+                  "Name":"Test category of M.Video company"
+               },
+               "City":{  
+                  "ID":"0x2788",
+                  "Name":"Москва"
+               },
+               "PageInstruction":{  
+                  "uid":"0x2789",
+                  "path":"smartfony-i-svyaz/smartfony-205",
+                  "pageInPaginationSelector":".pagination-list .pagination-item",
+                  "previewImageOfSelector":".product-tile-picture-link img",
+                  "pageParamPath":"/f/page=",
+                  "cityParamPath":"?cityId=",
+                  "itemSelector":".grid-view .product-tile",
+                  "nameOfItemSelector":".product-tile-title",
+                  "linkOfItemSelector":".product-tile-title a",
+                  "cityInCookieKey":"",
+                  "cityIdForCookie":"",
+                  "priceOfItemSelector":".product-price-current"
+              }
+    }
  }
 ```
 
 Response for all connected clients:
 ```json
-{
-	"Data": {
-		"Item": {
-			"Name": "Смартфон Samsung Galaxy J5 Prime Black",
-			"Price": {
- 				"Value": "12990",
- 				"DateTime": "2017-05-01T16:27:18.543653798Z",
- 				"City": "Москва"
-			},
-			"Company": {
-				"ID": "",
-				"Iri": "link",
-				"Name": "Company name",
-				"Categories": ["Some categories id or name"]
-			},
-		}
-	},
-	"Message": "Item from categories of company parsed"
+{  
+   "Data":{  
+      "Name":"Смартфон Samsung Galaxy S8 64Gb Черный бриллиант",
+      "IRI":"http://www.mvideo.ru//products/smartfon-samsung-galaxy-s8-64gb-chernyi-brilliant-30027818",
+      "PreviewImageLink":"img.mvideo.ru/Pdb/30027818m.jpg",
+      "Language":"en",
+      "Price":{  
+         "Value":"46990",
+         "City":{  
+            "ID":"0x2788",
+            "Name":"Москва"
+         },
+         "DateTime":"2018-02-10T08:34:35.6055814Z"
+      },
+      "Company":{  
+         "ID":"0x2786",
+         "Name":"M.Video",
+         "IRI":"http://www.mvideo.ru/"
+      },
+      "Category":{  
+         "ID":"",
+         "Name":"Test category of M.Video company"
+      },
+      "City":{  
+         "ID":"0x2788",
+         "Name":"Москва"
+      }
+   },
+   "Message":"Product of category of company ready"
 }
 ```
 
@@ -92,10 +96,4 @@ Set NSQD addres:
 ```go
 broker := broker.New()
 	go broker.Connect("192.168.99.100", 4150)
-```
-
-Subscribe
-```go
-	SubscribeCrawlerHandler(broker, "GetItemsFromCategoriesOfCompanys", "ItemFromCategoriesOfCompanyParsed")
-
 ```
