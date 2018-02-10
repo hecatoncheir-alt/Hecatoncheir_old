@@ -8,7 +8,6 @@ import (
 	"testing"
 
 	"github.com/hecatoncheir/Hecatoncheir/crawler"
-	"fmt"
 )
 
 func TestIntegrationCanParseCategoryOfCompanyByBrokerEventRequest(test *testing.T) {
@@ -84,8 +83,6 @@ func TestIntegrationCanParseCategoryOfCompanyByBrokerEventRequest(test *testing.
 		data := map[string]interface{}{}
 		json.Unmarshal(message, &data)
 
-
-		fmt.Println(string(message))
 
 		if data["Message"] != "Product of category of company ready" {
 			test.Fail()
