@@ -53,12 +53,12 @@ type PageInstruction struct {
 	PreviewImageOfItemSelector string `json:"previewImageOfSelector, omitempty"`
 	PageParamPath              string `json:"pageParamPath, omitempty"`
 	CityParamPath              string `json:"cityParamPath, omitempty"`
-	ItemSelector        string `json:"itemSelector, omitempty"`
-	NameOfItemSelector  string `json:"nameOfItemSelector, omitempty"`
-	LinkOfItemSelector  string `json:"linkOfItemSelector, omitempty"`
-	CityInCookieKey     string `json:"cityInCookieKey, omitempty"`
-	CityIDForCookie     string `json:"cityIdForCookie, omitempty"`
-	PriceOfItemSelector string `json:"priceOfItemSelector, omitempty"`
+	ItemSelector               string `json:"itemSelector, omitempty"`
+	NameOfItemSelector         string `json:"nameOfItemSelector, omitempty"`
+	LinkOfItemSelector         string `json:"linkOfItemSelector, omitempty"`
+	CityInCookieKey            string `json:"cityInCookieKey, omitempty"`
+	CityIDForCookie            string `json:"cityIdForCookie, omitempty"`
+	PriceOfItemSelector        string `json:"priceOfItemSelector, omitempty"`
 }
 
 // Product is a structure of one product from one page

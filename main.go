@@ -23,20 +23,21 @@ func main() {
 		log.Fatal(err)
 	}
 
-	channelName := "Parser"
+	log.Println(fmt.Sprintf("Connect to channel: '%v'.", config.Production.Channel))
 
-	channel, err := bro.ListenTopic(config.ApiVersion, channelName)
+	channel, err := bro.ListenTopic(config.ApiVersion, config.Production.Channel)
 	if err != nil {
 		log.Println(err)
 	}
 
-	log.Println(fmt.Sprintf("Listen topic: '%v' on channel: '%v'", config.ApiVersion, channelName))
+	log.Println(fmt.Sprintf("Listen topic: '%v' on channel: '%v'", config.ApiVersion, config.Production.Channel))
 
 	for message := range channel {
 		data := map[string]string{}
 		json.Unmarshal(message, &data)
 
 		if data["Message"] != "Need products of category of company" {
+			log.Println(fmt.Sprintf("Received message: '%v'", data["Message"]))
 			go handlesNeedProductsOfCategoryOfCompanyEvent(data["Data"], bro, config.ApiVersion)
 		}
 	}

@@ -58,7 +58,6 @@ func TestIntegrationCanParseCategoryOfCompanyByBrokerEventRequest(test *testing.
 		test.Error(err)
 	}
 
-
 	go bro.WriteToTopic("test", map[string]interface{}{"Message": "Need products of category of company", "Data": string(parseData)})
 
 	for message := range channel {
@@ -82,7 +81,6 @@ func TestIntegrationCanParseCategoryOfCompanyByBrokerEventRequest(test *testing.
 	for message := range channelForGetProducts {
 		data := map[string]interface{}{}
 		json.Unmarshal(message, &data)
-
 
 		if data["Message"] != "Product of category of company ready" {
 			test.Fail()
