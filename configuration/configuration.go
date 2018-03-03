@@ -6,8 +6,9 @@ import (
 	"strconv"
 )
 
+// Configuration is structure of config data from environment with default value
 type Configuration struct {
-	ApiVersion string
+	APIVersion string
 
 	Proxy string
 
@@ -28,24 +29,25 @@ type Configuration struct {
 	}
 }
 
+// GetConfiguration function check environment variables and return structure with value
 func GetConfiguration() (Configuration, error) {
 	configuration := Configuration{}
 
 	apiVersion := os.Getenv("Api-Version")
 	if apiVersion == "" {
-		configuration.ApiVersion = "v1"
+		configuration.APIVersion = "v1"
 	} else {
-		configuration.ApiVersion = apiVersion
+		configuration.APIVersion = apiVersion
 	}
 
-	productionParserChannel := os.Getenv("Production-Parser-Channel")
+	productionParserChannel := os.Getenv("Production-Channel")
 	if productionParserChannel == "" {
 		configuration.Production.Channel = "Parser"
 	} else {
 		configuration.Production.Channel = productionParserChannel
 	}
 
-	developmentParserChannel := os.Getenv("Development-Parser-Channel")
+	developmentParserChannel := os.Getenv("Development-Channel")
 	if developmentParserChannel == "" {
 		configuration.Development.Channel = "Parser"
 	} else {
