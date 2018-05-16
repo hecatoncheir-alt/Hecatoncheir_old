@@ -12,25 +12,22 @@ import (
 )
 
 func main() {
-	config, err := configuration.GetConfiguration()
-	if err != nil {
-		log.Fatal(err)
-	}
+	config := configuration.New()
 
 	bro := broker.New()
-	err = bro.Connect(config.Production.Broker.Host, config.Production.Broker.Port)
+	err := bro.Connect(config.Production.Broker.Host, config.Production.Broker.Port)
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	log.Println(fmt.Sprintf("Connect to channel: '%v'.", config.Production.Channel))
+	log.Println(fmt.Sprintf("Connect to channel: '%v'.", config.Production.HecatoncheirTopic))
 
-	channel, err := bro.ListenTopic(config.APIVersion, config.Production.Channel)
+	channel, err := bro.ListenTopic(config.APIVersion, config.Production.HecatoncheirTopic)
 	if err != nil {
 		log.Println(err)
 	}
 
-	log.Println(fmt.Sprintf("Listen topic: '%v' on channel: '%v'", config.APIVersion, config.Production.Channel))
+	log.Println(fmt.Sprintf("Listen topic: '%v' on channel: '%v'", config.APIVersion, config.Production.HecatoncheirTopic))
 
 	for message := range channel {
 		data := map[string]string{}

@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"fmt"
+
 	"github.com/PuerkitoBio/goquery"
 	"github.com/hecatoncheir/Hecatoncheir/crawler"
 )

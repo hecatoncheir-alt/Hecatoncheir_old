@@ -13,16 +13,18 @@ type Configuration struct {
 	Proxy string
 
 	Production struct {
-		Channel string
-		Broker  struct {
+		HecatoncheirTopic string
+		LogunaTopic       string
+		Broker            struct {
 			Host string
 			Port int
 		}
 	}
 
 	Development struct {
-		Channel string
-		Broker  struct {
+		HecatoncheirTopic string
+		LogunaTopic       string
+		Broker            struct {
 			Host string
 			Port int
 		}
@@ -30,28 +32,42 @@ type Configuration struct {
 }
 
 // GetConfiguration function check environment variables and return structure with value
-func GetConfiguration() (Configuration, error) {
+func New() *Configuration {
 	configuration := Configuration{}
 
 	apiVersion := os.Getenv("Api-Version")
 	if apiVersion == "" {
-		configuration.APIVersion = "v1"
+		configuration.APIVersion = "1.0.0"
 	} else {
 		configuration.APIVersion = apiVersion
 	}
 
-	productionParserChannel := os.Getenv("Production-Channel")
-	if productionParserChannel == "" {
-		configuration.Production.Channel = "Parser"
+	productionLogunaTopic := os.Getenv("Production-Loguna-Topic")
+	if productionLogunaTopic == "" {
+		configuration.Production.LogunaTopic = "Loguna"
 	} else {
-		configuration.Production.Channel = productionParserChannel
+		configuration.Production.LogunaTopic = productionLogunaTopic
 	}
 
-	developmentParserChannel := os.Getenv("Development-Channel")
-	if developmentParserChannel == "" {
-		configuration.Development.Channel = "Parser"
+	developmentLogunaTopic := os.Getenv("Development-Loguna-Topic")
+	if developmentLogunaTopic == "" {
+		configuration.Development.LogunaTopic = "DevLoguna"
 	} else {
-		configuration.Development.Channel = developmentParserChannel
+		configuration.Development.LogunaTopic = developmentLogunaTopic
+	}
+
+	productionParserHecatoncheirTopic := os.Getenv("Production-Hecatoncheir-Topic")
+	if productionParserHecatoncheirTopic == "" {
+		configuration.Production.HecatoncheirTopic = "Hecatoncheir"
+	} else {
+		configuration.Production.HecatoncheirTopic = productionParserHecatoncheirTopic
+	}
+
+	developmentParserHecatoncheirTopic := os.Getenv("Development-Hecatoncheir-Topic")
+	if developmentParserHecatoncheirTopic == "" {
+		configuration.Development.HecatoncheirTopic = "DevHecatoncheir"
+	} else {
+		configuration.Development.HecatoncheirTopic = developmentParserHecatoncheirTopic
 	}
 
 	productionBrokerHostFromEnvironment := os.Getenv("Production-Broker-Host")
@@ -92,5 +108,5 @@ func GetConfiguration() (Configuration, error) {
 		configuration.Development.Broker.Port = port
 	}
 
-	return configuration, nil
+	return &configuration
 }
