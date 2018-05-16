@@ -1,14 +1,19 @@
 package logger
 
 import (
+	"time"
+
 	"errors"
 	"github.com/hecatoncheir/Hecatoncheir/broker"
-	"time"
 )
 
 type LogData struct {
-	ApiVersion, Message, Service string
+	APIVersion, Message, Service string
 	Time                         time.Time
+}
+
+type Writer interface {
+	Write(data LogData) error
 }
 
 type LogWriter struct {
@@ -25,12 +30,12 @@ var (
 	ErrLogDataWithoutTime = errors.New("log data without time")
 )
 
-func (logger *LogWriter) Write(logData LogData) error {
-	if logData.Time.IsZero() {
+func (logWriter *LogWriter) Write(data LogData) error {
+	if data.Time.IsZero() {
 		return ErrLogDataWithoutTime
 	}
 
-	err := logger.bro.WriteToTopic(logger.LoggerTopic, logData)
+	err := logWriter.bro.WriteToTopic(logWriter.LoggerTopic, data)
 	if err != nil {
 		return err
 	}

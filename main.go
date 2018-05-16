@@ -48,7 +48,7 @@ func handlesNeedProductsOfCategoryOfCompanyEvent(parserInstructionsJSON string, 
 	}
 
 	if parserInstructionsOfCompany.Company.IRI == "http://www.mvideo.ru/" {
-		crawlerOfCompany := mvideo.NewCrawler()
+		crawlerOfCompany := mvideo.New()
 
 		go crawlerOfCompany.RunWithConfiguration(parserInstructionsOfCompany)
 
