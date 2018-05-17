@@ -2,8 +2,10 @@ package mvideo
 
 import (
 	"testing"
+	"time"
 
 	"fmt"
+
 	"github.com/hecatoncheir/Hecatoncheir/crawler"
 	"github.com/hecatoncheir/Hecatoncheir/logger"
 )
@@ -31,7 +33,7 @@ func TestCrawlerCanGetDocumentByConfig(test *testing.T) {
 		PageInstruction: crawler.PageInstruction{
 			ID:   "0x2789",
 			Path: "smartfony-i-svyaz/smartfony-205",
-			PageInPaginationSelector:   ".pagination-list .pagination-item",
+			PageInPaginationSelector:   ".c-pagination > .c-pagination__num",
 			PreviewImageOfItemSelector: ".product-tile-picture-link img",
 			PageParamPath:              "/f/page=",
 			CityParamPath:              "?cityId=",
@@ -41,29 +43,28 @@ func TestCrawlerCanGetDocumentByConfig(test *testing.T) {
 			LinkOfItemSelector:  ".product-tile-title a",
 			PriceOfItemSelector: ".product-price-current"},
 	}
-	fmt.Println(parserOfCompany)
 
 	logWriter := MockLogWriter{}
 	mechanism := New(&logWriter)
-	fmt.Println(mechanism.LogWriter)
-	//
-	//go mechanism.RunWithConfiguration(parserOfCompany)
-	//
-	//isRightItems := false
-	//
-	//go func() {
-	//	time.Sleep(time.Second * 6)
-	//	close(mechanism.Items)
-	//}()
-	//
-	//for item := range mechanism.Items {
-	//	if item.Name != "" && item.Price.Value != "" && item.IRI != "" {
-	//		isRightItems = true
-	//		break
-	//	}
-	//}
-	//
-	//if isRightItems == false {
-	//	test.Fail()
-	//}
+
+	go mechanism.RunWithConfiguration(parserOfCompany)
+
+	isRightItems := false
+
+	go func() {
+		time.Sleep(time.Second * 6)
+		close(mechanism.Items)
+	}()
+
+	for item := range mechanism.Items {
+		fmt.Println(item)
+		if item.Name != "" && item.Price.Value != "" && item.IRI != "" {
+			isRightItems = true
+			break
+		}
+	}
+
+	if isRightItems == false {
+		test.Fail()
+	}
 }

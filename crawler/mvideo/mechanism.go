@@ -1,8 +1,10 @@
 package mvideo
 
 import (
+	"errors"
 	"log"
 	"regexp"
+	"strconv"
 	"strings"
 	"time"
 
@@ -42,6 +44,7 @@ func New(logWriter logger.Writer) *Crawler {
 
 // getItemsFromPage can get product from html document by selectors in the configuration
 func (parser *Crawler) getItemsFromPage(document *goquery.Document, config crawler.ParserOfCompanyInstructions, patternForCutPrice *regexp.Regexp) error {
+
 	pageConfig := config.PageInstruction
 
 	document.Find(pageConfig.ItemSelector).Each(func(iterator int, item *goquery.Selection) {
@@ -87,30 +90,63 @@ func (parser *Crawler) getItemsFromPage(document *goquery.Document, config crawl
 	return nil
 }
 
-// RunWithConfiguration can parse web documents and make Item structure for each product on page filtered by selectors
-func (parser *Crawler) RunWithConfiguration(config crawler.ParserOfCompanyInstructions) error {
+var ErrGetPagesCountFail = errors.New("get pages count fail")
 
-	pageConfig := config.PageInstruction
+func (parser *Crawler) getPagesCount(config crawler.ParserOfCompanyInstructions) (pagesCount int, err error) {
+	collector := colly.NewCollector(colly.Async(true))
 
-	cityCode, err := cities.SearchCodeByCityName(config.City.Name)
-	if err != nil {
-		return err
-	}
+	collector.OnHTML(config.PageInstruction.PageInPaginationSelector,
+		func(element *colly.HTMLElement) {
+			pagesCount, err = strconv.Atoi(element.Text)
 
-	collector := colly.NewCollector()
+			if err != nil {
+				info := fmt.Sprintf(
+					"Get count of pages from: %v failed with response: %v \nError: %v",
+					element.Request.URL,
+					element.Response.Body,
+					err)
 
-	collector.OnRequest(func(request *colly.Request) {
-	})
+				data := logger.LogData{Message: info, Level: "warning"}
+				go parser.LogWriter.Write(data)
+			}
+		})
 
-	collector.OnError(func(r *colly.Response, err error) {
-		info := fmt.Sprintf("Request URL:", r.Request.URL, "failed with response:", r, "\nError:", err)
-		data := logger.LogData{Message: info}
+	collector.OnError(func(response *colly.Response, err error) {
+		info := fmt.Sprintf(
+			"Request URL: %v failed with response: %v \nError: %v",
+			response.Request.URL,
+			response,
+			err)
+
+		data := logger.LogData{Message: info, Level: "warning"}
 		go parser.LogWriter.Write(data)
 	})
 
+	cityCode, err := cities.SearchCodeByCityName(config.City.Name)
+	if err != nil {
+		return 0, err
+	}
+
+	pageConfig := config.PageInstruction
 	firstPageIRI := config.Company.IRI + pageConfig.Path + pageConfig.PageParamPath + "1" + pageConfig.CityParamPath + cityCode
 
-	collector.Visit(firstPageIRI)
+	err = collector.Visit(firstPageIRI)
+	if err != nil {
+		return 0, err
+	}
+
+	collector.Wait()
+
+	return pagesCount, ErrGetPagesCountFail
+}
+
+// RunWithConfiguration can parse web documents and make Item structure for each product on page filtered by selectors
+func (parser *Crawler) RunWithConfiguration(config crawler.ParserOfCompanyInstructions) error {
+
+	pagesCount, err := parser.getPagesCount(config)
+	if err != nil {
+		return err
+	}
 
 	// document, err := goquery.NewDocument(config.Company.IRI + pageConfig.Path + pageConfig.PageParamPath + "1" + pageConfig.CityParamPath + cityCode)
 	// if err != nil {
