@@ -15,7 +15,7 @@ func TestLoggerCanWriteLogData(test *testing.T) {
 	bro := broker.New()
 	bro.Connect(conf.Development.Broker.Host, conf.Development.Broker.Port)
 
-	logWriter := New(conf.Development.LogunaTopic, bro)
+	logWriter := New(conf.APIVersion, conf.Development.LogunaTopic, bro)
 	logData := LogData{Message: "test message", Time: time.Now().UTC()}
 	go logWriter.Write(logData)
 

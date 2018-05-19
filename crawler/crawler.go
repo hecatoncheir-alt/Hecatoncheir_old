@@ -75,7 +75,7 @@ type Product struct {
 
 // Price structure
 type Price struct {
-	Value    string
+	Value    int
 	City     City
 	DateTime time.Time
 }
