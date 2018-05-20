@@ -3,6 +3,7 @@ package mvideo
 import (
 	"regexp"
 	"strconv"
+	"strings"
 	"time"
 
 	"fmt"
@@ -25,7 +26,7 @@ type Crawler struct {
 
 // New create a new Crawler object
 func New(logWriter logger.Writer) *Crawler {
-	patternForCutPrice, err := regexp.Compile("¤")
+	patternForCutPrice, err := regexp.Compile("(&nbsp;)?[¤ ]*")
 	if err != nil {
 		panic(err)
 	}
@@ -146,7 +147,8 @@ func (parser *Crawler) getProductsFromPage(
 			productName := element.ChildText(instructions.PageInstruction.NameOfItemSelector)
 			productIRI := instructions.Company.IRI +
 				element.ChildAttr(instructions.PageInstruction.LinkOfItemSelector, "href")
-			previewImageLink := element.ChildAttr(instructions.PageInstruction.PreviewImageOfItemSelector, "src")
+			previewImageLink := element.ChildAttr(
+				instructions.PageInstruction.PreviewImageOfItemSelector, "data-original")
 
 			product := crawler.Product{
 				Language:         instructions.Language,
@@ -154,14 +156,17 @@ func (parser *Crawler) getProductsFromPage(
 				IRI:              productIRI,
 				PreviewImageLink: previewImageLink}
 
-			priceOfItem := element.ChildText(instructions.PageInstruction.PriceOfItemSelector)
+			priceOfItem := strings.TrimSpace(
+				element.ChildText(instructions.PageInstruction.PriceOfItemSelector))
+			println(priceOfItem)
 
+			// TODO
 			priceValueOfItem := parser.patternForCutPrice.ReplaceAllLiteralString(priceOfItem, "")
 			if priceValueOfItem == "" {
 				priceValueOfItem = priceOfItem
 			}
 
-			priceValue, err := strconv.Atoi(priceValueOfItem)
+			priceValue, err := strconv.ParseFloat(priceValueOfItem, 64)
 			if err != nil {
 				warning := fmt.Sprintf(
 					"Error get price of product: %v, by IRI: %v",
@@ -216,8 +221,10 @@ func (parser *Crawler) getProductsFromPage(
 	pageIsParsedChannel <- true
 }
 
-// RunWithConfiguration can parse web documents and make Item structure for each product on page filtered by selectors
-func (parser *Crawler) RunWithConfiguration(config crawler.ParserOfCompanyInstructions) (productsChannel chan crawler.Product, err error) {
+// RunWithConfiguration can parse web documents and make Item structure
+// for each product on page filtered by selectors.
+func (parser *Crawler) RunWithConfiguration(config crawler.ParserOfCompanyInstructions) (
+	productsChannel chan crawler.Product, err error) {
 
 	productsChannel = make(chan crawler.Product)
 

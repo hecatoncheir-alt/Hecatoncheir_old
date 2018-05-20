@@ -1,9 +1,12 @@
 package mvideo
 
 import (
+	"regexp"
+	"strconv"
 	"testing"
 
 	"fmt"
+
 	"github.com/hecatoncheir/Hecatoncheir/crawler"
 	"github.com/hecatoncheir/Hecatoncheir/logger"
 )
@@ -12,6 +15,54 @@ type MockLogWriter struct{}
 
 func (mockLogWriter *MockLogWriter) Write(logData logger.LogData) error {
 	return nil
+}
+
+func TestCutSymbolFromPriceOfItem(test *testing.T) {
+	price := "7 990.32¤"
+
+	patternForCutPrice, err := regexp.Compile("(&nbsp;)?[¤ ]*")
+	if err != nil {
+		test.Error(err)
+	}
+
+	replacedPrice := patternForCutPrice.ReplaceAllLiteralString(price, "")
+
+	if replacedPrice != "7990.32" {
+		test.Fatalf("Expected '7990' price value, actual: %v", replacedPrice)
+	}
+
+	realPrice, err := strconv.ParseFloat(replacedPrice, 64)
+	if err != nil {
+		test.Error(err)
+	}
+
+	if realPrice != 7990.32 {
+		test.Fatalf("Expected 7990 price value, actual: %v", realPrice)
+	}
+}
+
+func TestCutHTMLSymbolFromPriceOfItem(test *testing.T) {
+	price := "7&nbsp;990.32¤"
+
+	patternForCutPrice, err := regexp.Compile("(&nbsp;)?[¤ ]*")
+	if err != nil {
+		test.Error(err)
+	}
+
+	replacedPrice := patternForCutPrice.ReplaceAllLiteralString(price, "")
+
+	if replacedPrice != "7990.32" {
+		test.Fatalf("Expected '7990' price value, actual: %v", replacedPrice)
+	}
+
+	realPrice, err := strconv.ParseFloat(replacedPrice, 64)
+	if err != nil {
+		test.Error(err)
+	}
+
+	if realPrice != 7990.32 {
+		test.Fatalf("Expected 7990 price value, actual: %v", realPrice)
+	}
 }
 
 func TestCrawlerCanGetDocumentByConfig(test *testing.T) {
@@ -36,7 +87,7 @@ func TestCrawlerCanGetDocumentByConfig(test *testing.T) {
 			CityParamPath:            "?cityId=",
 			//CityParam:                  "CityCZ_975",
 			ItemSelector:               ".c-product-tile",
-			PreviewImageOfItemSelector: ".product-tile-picture__image img",
+			PreviewImageOfItemSelector: ".c-product-tile-picture__link .lazy-load-image-holder img",
 			NameOfItemSelector:         ".c-product-tile__description .sel-product-tile-title",
 			LinkOfItemSelector:         ".c-product-tile__description .sel-product-tile-title",
 			PriceOfItemSelector:        ".c-product-tile__checkout-section .c-pdp-price__current"},

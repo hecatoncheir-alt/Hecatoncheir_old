@@ -11,7 +11,7 @@ import (
 func TestBrokerCanConnectToNSQ(test *testing.T) {
 	bro := New()
 
-	config, _ := configuration.GetConfiguration()
+	config := configuration.New()
 
 	err := bro.Connect(config.Development.Broker.Host, config.Development.Broker.Port)
 	if err != nil {
