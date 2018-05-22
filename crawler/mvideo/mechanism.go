@@ -26,7 +26,7 @@ type Crawler struct {
 
 // New create a new Crawler object
 func New(logWriter logger.Writer) *Crawler {
-	patternForCutPrice, err := regexp.Compile("(&nbsp;)?[¤ ]*")
+	patternForCutPrice, err := regexp.Compile("([0-9]*) ([0-9]*)")
 	if err != nil {
 		panic(err)
 	}
@@ -36,54 +36,6 @@ func New(logWriter logger.Writer) *Crawler {
 		patternForCutPrice: patternForCutPrice}
 	return &parser
 }
-
-// // getItemsFromPage can get product from html document by selectors in the configuration
-// func (parser *Crawler) getItemsFromPage(document *goquery.Document, config crawler.ParserOfCompanyInstructions, patternForCutPrice *regexp.Regexp) error {
-
-// 	pageConfig := config.PageInstruction
-
-// 	document.Find(pageConfig.ItemSelector).Each(func(iterator int, item *goquery.Selection) {
-// 		var name, price, link, previewImageLink string
-
-// 		name = item.Find(pageConfig.NameOfItemSelector).Text()
-// 		price = item.Find(pageConfig.PriceOfItemSelector).Text()
-// 		link = item.Find(pageConfig.LinkOfItemSelector).AttrOr("href", "/")
-// 		previewImageLink = item.Find(pageConfig.PreviewImageOfItemSelector).AttrOr("data-original", "/")
-
-// 		name = strings.TrimSpace(name)
-// 		price = strings.TrimSpace(price)
-// 		link = config.Company.IRI + link
-// 		previewImageLink = strings.Replace(previewImageLink, "//", "", 1)
-
-// 		// price = strings.Replace(price, "р.", "", -1)
-// 		price = patternForCutPrice.ReplaceAllString(price, "")
-
-// 		//fmt.Printf("Review %s: %s \n", name, price)
-
-// 		priceData := crawler.Price{
-// 			Value:    price,
-// 			City:     config.City,
-// 			DateTime: time.Now().UTC(),
-// 		}
-
-// 		pageItem := crawler.Product{
-// 			Name:             name,
-// 			Price:            priceData,
-// 			IRI:              link,
-// 			Company:          config.Company,
-// 			Language:         config.Language,
-// 			City:             config.City,
-// 			Category:         config.Category,
-// 			PreviewImageLink: previewImageLink,
-// 		}
-
-// 		log.Println(fmt.Sprintf("Product: '%v' of category: '%v' of company: '%v' parsed. Price: '%s'", name, config.Category.Name, config.Company.Name, priceData.Value))
-
-// 		parser.Items <- pageItem
-// 	})
-
-// 	return nil
-// }
 
 func (parser *Crawler) getPagesCount(config crawler.ParserOfCompanyInstructions) (pagesCount int, err error) {
 	collector := colly.NewCollector(colly.Async(true))
@@ -156,17 +108,16 @@ func (parser *Crawler) getProductsFromPage(
 				IRI:              productIRI,
 				PreviewImageLink: previewImageLink}
 
-			priceOfItem := strings.TrimSpace(
-				element.ChildText(instructions.PageInstruction.PriceOfItemSelector))
-			println(priceOfItem)
+			priceOfItemValue := element.ChildText(instructions.PageInstruction.PriceOfItemSelector)
+			priceIsMatched := parser.patternForCutPrice.MatchString(priceOfItemValue)
 
-			// TODO
-			priceValueOfItem := parser.patternForCutPrice.ReplaceAllLiteralString(priceOfItem, "")
-			if priceValueOfItem == "" {
-				priceValueOfItem = priceOfItem
+			var priceOfItem string
+			if priceIsMatched {
+				priceOfItem = parser.patternForCutPrice.FindString(priceOfItemValue)
+				priceOfItem = strings.Replace(priceOfItem, string([]byte{194, 160}), "", 1)
 			}
 
-			priceValue, err := strconv.ParseFloat(priceValueOfItem, 64)
+			priceValue, err := strconv.ParseFloat(priceOfItem, 64)
 			if err != nil {
 				warning := fmt.Sprintf(
 					"Error get price of product: %v, by IRI: %v",

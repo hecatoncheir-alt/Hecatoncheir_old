@@ -5,8 +5,6 @@ import (
 	"strconv"
 	"testing"
 
-	"fmt"
-
 	"github.com/hecatoncheir/Hecatoncheir/crawler"
 	"github.com/hecatoncheir/Hecatoncheir/logger"
 )
@@ -105,7 +103,10 @@ func TestCrawlerCanGetDocumentByConfig(test *testing.T) {
 		if product.Name == "" {
 			test.Fatalf("Expect name of product but get: %v", product.Name)
 		}
-		fmt.Println(product)
+
+		if product.Price.Value == 0 {
+			test.Fatalf("Expected positive price value, actual: %v", product.Price.Value)
+		}
 		break
 	}
 
