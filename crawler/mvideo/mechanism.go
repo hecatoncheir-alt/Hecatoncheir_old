@@ -3,7 +3,6 @@ package mvideo
 import (
 	"regexp"
 	"strconv"
-	"strings"
 	"time"
 
 	"fmt"
@@ -26,7 +25,7 @@ type Crawler struct {
 
 // New create a new Crawler object
 func New(logWriter logger.Writer) *Crawler {
-	patternForCutPrice, err := regexp.Compile("([0-9]*) ([0-9]*)")
+	patternForCutPrice, err := regexp.Compile("[ ¤]*")
 	if err != nil {
 		panic(err)
 	}
@@ -106,6 +105,9 @@ func (parser *Crawler) getProductsFromPage(
 				Language:         instructions.Language,
 				Name:             productName,
 				IRI:              productIRI,
+				City:             instructions.City,
+				Category:         instructions.Category,
+				Company:          instructions.Company,
 				PreviewImageLink: previewImageLink}
 
 			priceOfItemValue := element.ChildText(instructions.PageInstruction.PriceOfItemSelector)
@@ -113,8 +115,7 @@ func (parser *Crawler) getProductsFromPage(
 
 			var priceOfItem string
 			if priceIsMatched {
-				priceOfItem = parser.patternForCutPrice.FindString(priceOfItemValue)
-				priceOfItem = strings.Replace(priceOfItem, string([]byte{194, 160}), "", 1)
+				priceOfItem = parser.patternForCutPrice.ReplaceAllString(priceOfItemValue, "")
 			}
 
 			priceValue, err := strconv.ParseFloat(priceOfItem, 64)
