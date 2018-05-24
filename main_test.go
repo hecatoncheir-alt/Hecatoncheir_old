@@ -82,11 +82,11 @@ func TestIntegrationCanParseCategoryOfCompanyByBrokerEventRequest(test *testing.
 		json.Unmarshal(message, &data)
 
 		if data["Message"] != "Product of category of company ready" {
-			test.Fail()
+			test.Fatalf("Expected \"Product of category of company ready\" message, but actual: %v", data["Message"])
 		}
 
 		if data["Data"].(map[string]interface{})["Language"] != "ru" {
-			test.Fail()
+			test.Fatalf("Expected \"ru\" language, but actual: %v", data["Data"].(map[string]interface{})["Language"])
 		}
 
 		break
