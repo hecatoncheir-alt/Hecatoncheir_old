@@ -21,34 +21,35 @@ func TestIntegrationCanParseCategoryOfCompanyByBrokerEventRequest(test *testing.
 		test.Error(err)
 	}
 
-	channel, err := bro.ListenTopic("test", "Parser")
+	channel, err := bro.ListenTopic(config.Development.HecatoncheirTopic, config.APIVersion)
 	if err != nil {
 		test.Error(err)
 	}
 
 	parserOfCompany := crawler.ParserOfCompanyInstructions{
-		Language: "en",
+		Language: "ru",
 		Company: crawler.Company{
 			ID:   "0x2786",
-			Name: "M.Video",
+			Name: "М.Видео",
 			IRI:  "http://www.mvideo.ru/"},
 		Category: crawler.Category{
-			ID:   "",
-			Name: "Test category of M.Video company"},
+			ID:   "0x2787",
+			Name: "Тестовая категория компании М.Видео"},
 		City: crawler.City{
 			ID:   "0x2788",
 			Name: "Москва"},
 		PageInstruction: crawler.PageInstruction{
 			ID:   "0x2789",
 			Path: "smartfony-i-svyaz/smartfony-205",
-			PageInPaginationSelector:   ".pagination-list .pagination-item",
-			PreviewImageOfItemSelector: ".product-tile-picture-link img",
-			PageParamPath:              "/f/page=",
-			CityParamPath:              "?cityId=",
-			ItemSelector:               ".grid-view .product-tile",
-			NameOfItemSelector:         ".product-tile-title",
-			LinkOfItemSelector:         ".product-tile-title a",
-			PriceOfItemSelector:        ".product-price-current"},
+			PageInPaginationSelector: ".c-pagination > .c-pagination__num",
+			PageParamPath:            "/f/page=",
+			CityParamPath:            "?cityId=",
+			//CityParam:                  "CityCZ_975",
+			ItemSelector:               ".c-product-tile",
+			PreviewImageOfItemSelector: ".c-product-tile-picture__link .lazy-load-image-holder img",
+			NameOfItemSelector:         ".c-product-tile__description .sel-product-tile-title",
+			LinkOfItemSelector:         ".c-product-tile__description .sel-product-tile-title",
+			PriceOfItemSelector:        ".c-product-tile__checkout-section .c-pdp-price__current"},
 	}
 
 	parseData, err := json.Marshal(parserOfCompany)
@@ -56,7 +57,7 @@ func TestIntegrationCanParseCategoryOfCompanyByBrokerEventRequest(test *testing.
 		test.Error(err)
 	}
 
-	go bro.WriteToTopic("test", map[string]interface{}{"Message": "Need products of category of company", "Data": string(parseData)})
+	go bro.WriteToTopic(config.Development.HecatoncheirTopic, map[string]interface{}{"Message": "Need products of category of company", "Data": string(parseData)})
 
 	for message := range channel {
 		data := map[string]string{}
@@ -66,12 +67,12 @@ func TestIntegrationCanParseCategoryOfCompanyByBrokerEventRequest(test *testing.
 			test.Fail()
 		}
 
-		go handlesNeedProductsOfCategoryOfCompanyEvent(data["Data"], bro, "test")
+		go handlesNeedProductsOfCategoryOfCompanyEvent(data["Data"], bro, config.Development.LogunaTopic, nil)
 
 		break
 	}
 
-	channelForGetProducts, err := bro.ListenTopic("test", "Parser")
+	channelForGetProducts, err := bro.ListenTopic(config.Development.LogunaTopic, config.APIVersion)
 	if err != nil {
 		test.Error(err)
 	}
@@ -84,7 +85,7 @@ func TestIntegrationCanParseCategoryOfCompanyByBrokerEventRequest(test *testing.
 			test.Fail()
 		}
 
-		if data["Data"].(map[string]interface{})["Language"] != "en" {
+		if data["Data"].(map[string]interface{})["Language"] != "ru" {
 			test.Fail()
 		}
 
