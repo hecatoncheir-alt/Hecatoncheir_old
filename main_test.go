@@ -63,33 +63,36 @@ func TestIntegrationCanParseCategoryOfCompanyByBrokerEventRequest(test *testing.
 	go bro.WriteToTopic(config.Development.HecatoncheirTopic, event)
 
 	for message := range channel {
-		data := map[string]string{}
+		data := broker.EventData{}
 		json.Unmarshal(message, &data)
 
-		if data["Message"] != "Need products of category of company" {
+		if data.Message != "Need products of category of company" {
 			test.Fail()
 		}
 
-		go handlesNeedProductsOfCategoryOfCompanyEvent(data["Data"], bro, config.Development.LogunaTopic, nil)
+		go handlesNeedProductsOfCategoryOfCompanyEvent(data.Data, bro, config.Development.SprootTopic, nil)
 
 		break
 	}
 
-	channelForGetProducts, err := bro.ListenTopic(config.Development.LogunaTopic, config.APIVersion)
+	channelForGetProducts, err := bro.ListenTopic(config.Development.SprootTopic, config.APIVersion)
 	if err != nil {
 		test.Error(err)
 	}
 
 	for message := range channelForGetProducts {
-		data := map[string]interface{}{}
+		data := broker.EventData{}
 		json.Unmarshal(message, &data)
 
-		if data["Message"] != "Product of category of company ready" {
-			test.Fatalf("Expected \"Product of category of company ready\" message, but actual: %v", data["Message"])
+		if data.Message != "Product of category of company ready" {
+			test.Fatalf("Expected \"Product of category of company ready\" message, but actual: %v", data.Message)
 		}
 
-		if data["Data"].(map[string]interface{})["Language"] != "ru" {
-			test.Fatalf("Expected \"ru\" language, but actual: %v", data["Data"].(map[string]interface{})["Language"])
+		dataOfEvent := map[string]interface{}{}
+		json.Unmarshal([]byte(data.Data), &dataOfEvent)
+
+		if dataOfEvent["Language"] != "ru" {
+			test.Fatalf("Expected \"ru\" language, but actual: %v", dataOfEvent["Language"])
 		}
 
 		break

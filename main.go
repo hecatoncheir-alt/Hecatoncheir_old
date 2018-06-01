@@ -90,7 +90,7 @@ func main() {
 	}
 }
 
-func handlesNeedProductsOfCategoryOfCompanyEvent(parserInstructionsJSON string, bro *broker.Broker, topic string, loguna *logger.LogWriter) {
+func handlesNeedProductsOfCategoryOfCompanyEvent(parserInstructionsJSON string, bro *broker.Broker, topicForProductsPush string, loguna *logger.LogWriter) {
 	parserInstructionsOfCompany, err := crawler.NewParserInstructionsFromJSON(parserInstructionsJSON)
 	if err != nil {
 		log.Println(err)
@@ -114,7 +114,7 @@ func handlesNeedProductsOfCategoryOfCompanyEvent(parserInstructionsJSON string, 
 			}
 
 			event := broker.EventData{Message: "Product of category of company ready", Data: string(data)}
-			go bro.WriteToTopic(topic, event)
+			go bro.WriteToTopic(topicForProductsPush, event)
 		}
 	}
 
