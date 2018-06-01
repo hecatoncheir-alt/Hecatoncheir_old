@@ -9,7 +9,7 @@ import (
 
 	"github.com/gocolly/colly"
 	"github.com/hecatoncheir/Hecatoncheir/crawler"
-	"github.com/hecatoncheir/Hecatoncheir/logger"
+	"github.com/hecatoncheir/Logger"
 )
 
 var cities = crawler.Cities{

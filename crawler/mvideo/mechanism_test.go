@@ -6,7 +6,7 @@ import (
 	"testing"
 
 	"github.com/hecatoncheir/Hecatoncheir/crawler"
-	"github.com/hecatoncheir/Hecatoncheir/logger"
+	"github.com/hecatoncheir/Logger"
 )
 
 type MockLogWriter struct{}

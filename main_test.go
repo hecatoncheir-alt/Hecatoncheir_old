@@ -1,8 +1,8 @@
 package main
 
 import (
-	"github.com/hecatoncheir/Hecatoncheir/broker"
-	"github.com/hecatoncheir/Hecatoncheir/configuration"
+	"github.com/hecatoncheir/Broker"
+	"github.com/hecatoncheir/Configuration"
 
 	"encoding/json"
 	"testing"
@@ -12,7 +12,9 @@ import (
 
 func TestIntegrationCanParseCategoryOfCompanyByBrokerEventRequest(test *testing.T) {
 	config := configuration.New()
-	bro := broker.New()
+	config.ServiceName = "Hecatoncheir"
+
+	bro := broker.New(config.APIVersion, config.ServiceName)
 
 	var err error
 
@@ -57,7 +59,8 @@ func TestIntegrationCanParseCategoryOfCompanyByBrokerEventRequest(test *testing.
 		test.Error(err)
 	}
 
-	go bro.WriteToTopic(config.Development.HecatoncheirTopic, map[string]interface{}{"Message": "Need products of category of company", "Data": string(parseData)})
+	event := broker.EventData{Message: "Need products of category of company", Data: string(parseData)}
+	go bro.WriteToTopic(config.Development.HecatoncheirTopic, event)
 
 	for message := range channel {
 		data := map[string]string{}
