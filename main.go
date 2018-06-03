@@ -68,12 +68,10 @@ func main() {
 		log.Println(err)
 	}
 
-	for message := range channel {
-		data := map[string]string{}
-		json.Unmarshal(message, &data)
+	for data := range channel {
 
-		if data["Message"] != "Need products of category of company" {
-			eventMessage = fmt.Sprintf("Received message: '%v'", data["Message"])
+		if data.Message != "Need products of category of company" {
+			eventMessage = fmt.Sprintf("Received message: '%v'", data.Message)
 			log.Println(eventMessage)
 
 			event = logger.LogData{
@@ -85,7 +83,7 @@ func main() {
 				log.Println(err)
 			}
 
-			go handlesNeedProductsOfCategoryOfCompanyEvent(data["Data"], bro, config.APIVersion, loguna)
+			go handlesNeedProductsOfCategoryOfCompanyEvent(data.Data, bro, config.APIVersion, loguna)
 		}
 	}
 }

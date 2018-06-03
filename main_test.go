@@ -12,7 +12,9 @@ import (
 
 func TestIntegrationCanParseCategoryOfCompanyByBrokerEventRequest(test *testing.T) {
 	config := configuration.New()
-	config.ServiceName = "Hecatoncheir"
+	if config.ServiceName == "" {
+		config.ServiceName = "Hecatoncheir"
+	}
 
 	bro := broker.New(config.APIVersion, config.ServiceName)
 
@@ -62,9 +64,7 @@ func TestIntegrationCanParseCategoryOfCompanyByBrokerEventRequest(test *testing.
 	event := broker.EventData{Message: "Need products of category of company", Data: string(parseData)}
 	go bro.WriteToTopic(config.Development.HecatoncheirTopic, event)
 
-	for message := range channel {
-		data := broker.EventData{}
-		json.Unmarshal(message, &data)
+	for data := range channel {
 
 		if data.Message != "Need products of category of company" {
 			test.Fail()
@@ -80,9 +80,7 @@ func TestIntegrationCanParseCategoryOfCompanyByBrokerEventRequest(test *testing.
 		test.Error(err)
 	}
 
-	for message := range channelForGetProducts {
-		data := broker.EventData{}
-		json.Unmarshal(message, &data)
+	for data := range channelForGetProducts {
 
 		if data.Message != "Product of category of company ready" {
 			test.Fatalf("Expected \"Product of category of company ready\" message, but actual: %v", data.Message)
