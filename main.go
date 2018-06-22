@@ -31,7 +31,7 @@ func main() {
 	eventMessage :=
 		fmt.Sprintf("Configuration of hecatoncheir: '%v'.", config)
 
-	log.Println(eventMessage)
+	//log.Println(eventMessage)
 
 	err = loguna.Write(logger.LogData{Message: eventMessage, Level: "info"})
 	if err != nil {
@@ -73,6 +73,7 @@ func main() {
 		if data.Message != "Need products of category of company" {
 			eventMessage = fmt.Sprintf("Received message: '%v'", data.Message)
 			log.Println(eventMessage)
+			fmt.Println(eventMessage)
 
 			event = logger.LogData{
 				Message: eventMessage,
@@ -112,6 +113,7 @@ func handlesNeedProductsOfCategoryOfCompanyEvent(parserInstructionsJSON string, 
 			}
 
 			event := broker.EventData{Message: "Product of category of company ready", Data: string(data)}
+			fmt.Printf("Write: %v to %v", event, topicForProductsPush)
 			go bro.WriteToTopic(topicForProductsPush, event)
 		}
 	}
