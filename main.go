@@ -19,8 +19,8 @@ func main() {
 	}
 
 	bro := broker.New(config.APIVersion, config.ServiceName)
-	err := bro.Connect(config.Production.Broker.Host,
-		config.Production.Broker.Port)
+	err := bro.Connect(config.Production.EventBus.Host,
+		config.Production.EventBus.Port)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -51,11 +51,6 @@ func main() {
 		log.Println(err)
 	}
 
-	channel, err := bro.ListenTopic(config.APIVersion, config.Production.HecatoncheirTopic)
-	if err != nil {
-		log.Println(err)
-	}
-
 	eventMessage = fmt.Sprintf("Listen topic: '%v' on channel: '%v'", config.APIVersion, config.Production.HecatoncheirTopic)
 	log.Println(eventMessage)
 
@@ -68,7 +63,7 @@ func main() {
 		log.Println(err)
 	}
 
-	for data := range channel {
+	for data := range bro.InputChannel {
 
 		if data.Message != "Need products of category of company" {
 			eventMessage = fmt.Sprintf("Received message: '%v'", data.Message)
@@ -89,11 +84,15 @@ func main() {
 	}
 }
 
-func handlesNeedProductsOfCategoryOfCompanyEvent(parserInstructionsJSON string, bro *broker.Broker, topicForProductsPush string, loguna *logger.LogWriter) {
+func handlesNeedProductsOfCategoryOfCompanyEvent(parserInstructionsJSON string, bro *broker.Broker, topicForProductsPush string, loguna logger.Writer) {
+
 	parserInstructionsOfCompany, err := crawler.NewParserInstructionsFromJSON(parserInstructionsJSON)
 	if err != nil {
 		log.Println(err)
-		loguna.Write(logger.LogData{Message: err.Error(), Level: "warning"})
+		err := loguna.Write(logger.LogData{Message: err.Error(), Level: "warning"})
+		if err != nil {
+			log.Println(err)
+		}
 	}
 
 	if parserInstructionsOfCompany.Company.IRI == "http://www.mvideo.ru/" {
@@ -102,19 +101,25 @@ func handlesNeedProductsOfCategoryOfCompanyEvent(parserInstructionsJSON string, 
 		channelWithProducts, err := crawlerOfCompany.RunWithConfiguration(parserInstructionsOfCompany)
 		if err != nil {
 			log.Println(err)
-			loguna.Write(logger.LogData{Message: err.Error(), Level: "warning"})
+			err := loguna.Write(logger.LogData{Message: err.Error(), Level: "warning"})
+			if err != nil {
+				log.Println(err)
+			}
 		}
 
 		for product := range channelWithProducts {
 			data, err := json.Marshal(product)
 			if err != nil {
 				log.Println(err)
-				loguna.Write(logger.LogData{Message: err.Error(), Level: "warning"})
+				err := loguna.Write(logger.LogData{Message: err.Error(), Level: "warning"})
+				if err != nil {
+					log.Println(err)
+				}
 			}
 
 			event := broker.EventData{Message: "Product of category of company ready", Data: string(data)}
 			fmt.Printf("Write: %v to %v", event, topicForProductsPush)
-			go bro.WriteToTopic(topicForProductsPush, event)
+			go bro.Write(event)
 		}
 	}
 

@@ -51,7 +51,12 @@ func (parser *Crawler) getPagesCount(config crawler.ParserOfCompanyInstructions)
 					err)
 
 				data := logger.LogData{Message: info, Level: "warning"}
-				go parser.LogWriter.Write(data)
+				go func() {
+					err := parser.LogWriter.Write(data)
+					if err != nil {
+						fmt.Println("Error: ", err)
+					}
+				}()
 			}
 		})
 
@@ -63,7 +68,12 @@ func (parser *Crawler) getPagesCount(config crawler.ParserOfCompanyInstructions)
 			err)
 
 		data := logger.LogData{Message: warning, Level: "warning"}
-		go parser.LogWriter.Write(data)
+		go func() {
+			err := parser.LogWriter.Write(data)
+			if err != nil {
+				fmt.Println("Error: ", err)
+			}
+		}()
 	})
 
 	cityCode, err := cities.SearchCodeByCityName(config.City.Name)
@@ -126,7 +136,12 @@ func (parser *Crawler) getProductsFromPage(
 					element.Request.URL)
 
 				data := logger.LogData{Message: warning, Level: "warning"}
-				go parser.LogWriter.Write(data)
+				go func() {
+					err := parser.LogWriter.Write(data)
+					if err != nil {
+						fmt.Println("Error: ", err)
+					}
+				}()
 			}
 
 			price := crawler.Price{
@@ -143,7 +158,14 @@ func (parser *Crawler) getProductsFromPage(
 				element.Request.URL)
 
 			data := logger.LogData{Message: info, Level: "info"}
-			go parser.LogWriter.Write(data)
+			if parser.LogWriter != nil {
+				go func() {
+					err := parser.LogWriter.Write(data)
+					if err != nil {
+						println(fmt.Sprintf("Error mechanism send log: %v with error: %v", data, err))
+					}
+				}()
+			}
 			productsChannel <- product
 		})
 
@@ -155,7 +177,10 @@ func (parser *Crawler) getProductsFromPage(
 			err)
 
 		data := logger.LogData{Message: warning, Level: "warning"}
-		go parser.LogWriter.Write(data)
+		go func() {
+			err := parser.LogWriter.Write(data)
+			fmt.Println("Error: ", err)
+		}()
 	})
 
 	err := collector.Visit(pageIRI)
@@ -166,7 +191,12 @@ func (parser *Crawler) getProductsFromPage(
 			err)
 
 		data := logger.LogData{Message: warning, Level: "warning"}
-		go parser.LogWriter.Write(data)
+		go func() {
+			err := parser.LogWriter.Write(data)
+			if err != nil {
+				fmt.Println("Error: ", err)
+			}
+		}()
 	}
 
 	collector.Wait()
@@ -219,7 +249,12 @@ func (parser *Crawler) RunWithConfiguration(config crawler.ParserOfCompanyInstru
 					"Page is not parsed: %v parsing", pageWithError)
 
 				data := logger.LogData{Message: warning, Level: "warning"}
-				go parser.LogWriter.Write(data)
+				go func() {
+					err := parser.LogWriter.Write(data)
+					if err != nil {
+						fmt.Println("Error: ", err)
+					}
+				}()
 				break
 			}
 		}

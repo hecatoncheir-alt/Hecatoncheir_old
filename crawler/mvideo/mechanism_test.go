@@ -103,6 +103,8 @@ func TestCrawlerCanGetDocumentByConfig(test *testing.T) {
 		test.Fatal(err)
 	}
 
+	expectedCityName := "Москва"
+
 	for product := range productsChannel {
 		if product.Name == "" {
 			test.Fatalf("Expect name of product but get: %v", product.Name)
@@ -149,7 +151,7 @@ func TestCrawlerCanGetDocumentByConfig(test *testing.T) {
 			test.Fatalf("Expected ID of city \"0x2788\", actual: %v", product.City.ID)
 		}
 
-		if product.City.Name != "Москва" {
+		if product.City.Name != expectedCityName {
 			test.Fatalf("Expected name of city \"Москва\", actual: %v", product.City.Name)
 		}
 
@@ -161,10 +163,12 @@ func TestCrawlerCanGetDocumentByConfig(test *testing.T) {
 			test.Fatalf("Expected ID of city of price \"0x2788\", actual: %v", product.Price.City.ID)
 		}
 
-		if product.Price.City.Name != "Москва" {
+		if product.Price.City.Name != expectedCityName {
 			test.Fatalf("Expected name of city of price \"Москва\", actual: %v", product.Price.City.Name)
 		}
 
-		break
+		if product.Price.City.Name == expectedCityName {
+			break
+		}
 	}
 }
