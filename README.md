@@ -54,7 +54,7 @@ Response for all connected clients:
       "PreviewImageLink":"img.mvideo.ru/Pdb/30027818m.jpg",
       "Language":"en",
       "Price":{  
-         "Value":"46990",
+         "Value":46990,
          "City":{  
             "ID":"0x2788",
             "Name":"Москва"
